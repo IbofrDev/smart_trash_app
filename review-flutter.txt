@@ -1,0 +1,712 @@
+========== FLUTTER FILES ========== 
+ 
+========== FILE: lib\config\api_config.dart ========== 
+class ApiConfig {
+  // ============================================
+  // SESUAIKAN DENGAN ENVIRONMENT KAMU:
+  // Android Emulator  → 10.0.2.2
+  // Physical Device   → IP PC kamu (cek: ipconfig)
+  // Contoh: 192.168.1.100
+  // ============================================
+  static const String baseUrl = 'http://10.0.2.2:8000/api';
+
+  // Google Sign-In Server Client ID (Web type)
+  // Dapatkan dari Google Cloud Console → Credentials → OAuth 2.0
+  static const String googleServerClientId = 'YOUR_WEB_CLIENT_ID_HERE';
+
+  static Map<String, String> headers({String? token}) {
+    final h = <String, String>{
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    };
+    if (token != null) {
+      h['Authorization'] = 'Bearer $token';
+    }
+    return h;
+  }
+}
+ 
+========== FILE: lib\config\app_theme.dart ========== 
+import 'package:flutter/material.dart';
+
+class AppTheme {
+  // Brand Colors
+  static const Color primaryColor = Color(0xFF28A745);
+  static const Color secondaryColor = Color(0xFF17A2B8);
+  static const Color warningColor = Color(0xFFFFC107);
+  static const Color dangerColor = Color(0xFFDC3545);
+  static const Color darkColor = Color(0xFF2C3E50);
+
+  static ThemeData get lightTheme {
+    return ThemeData(
+      useMaterial3: true,
+      colorSchemeSeed: primaryColor,
+      brightness: Brightness.light,
+      scaffoldBackgroundColor: const Color(0xFFF5F5F5),
+      appBarTheme: const AppBarTheme(
+        centerTitle: true,
+        elevation: 0,
+      ),
+      cardTheme: CardThemeData(
+        elevation: 1,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      ),
+    );
+  }
+}
+ 
+========== FILE: lib\models\mahasiswa.dart ========== 
+import 'level.dart';
+
+class Mahasiswa {
+  final int id;
+  final String? googleId;
+  final String email;
+  final String name;
+  final String? nim;
+  final String? prodi;
+  final String? rfidUid;
+  final int totalPoin;
+  final int? levelId;
+  final Level? level;
+  final String? avatar;
+
+  Mahasiswa({
+    required this.id,
+    this.googleId,
+    required this.email,
+    required this.name,
+    this.nim,
+    this.prodi,
+    this.rfidUid,
+    required this.totalPoin,
+    this.levelId,
+    this.level,
+    this.avatar,
+  });
+
+  factory Mahasiswa.fromJson(Map<String, dynamic> json) {
+    return Mahasiswa(
+      id: json['id'] ?? 0,
+      googleId: json['google_id'],
+      email: json['email'] ?? '',
+      name: json['name'] ?? '',
+      nim: json['nim'],
+      prodi: json['prodi'],
+      rfidUid: json['rfid_uid'],
+      totalPoin: json['total_poin'] ?? 0,
+      levelId: json['level_id'],
+      level: json['level'] != null ? Level.fromJson(json['level']) : null,
+      avatar: json['avatar'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'nim': nim,
+      'prodi': prodi,
+    };
+  }
+}
+ 
+========== FILE: lib\models\dashboard_data.dart ========== 
+import 'mahasiswa.dart';
+import 'transaksi.dart';
+
+class DashboardData {
+  final Mahasiswa mahasiswa;
+  final double totalBerat;
+  final int totalTransaksi;
+  final int? ranking;
+  final double levelProgress;
+  final List<Transaksi> transaksiTerbaru;
+
+  DashboardData({
+    required this.mahasiswa,
+    required this.totalBerat,
+    required this.totalTransaksi,
+    this.ranking,
+    required this.levelProgress,
+    required this.transaksiTerbaru,
+  });
+
+  factory DashboardData.fromJson(Map<String, dynamic> json) {
+    return DashboardData(
+      mahasiswa: Mahasiswa.fromJson(json['mahasiswa'] ?? {}),
+      totalBerat: (json['total_berat'] ?? json['stats']?['total_berat'] ?? 0).toDouble(),
+      totalTransaksi: json['total_transaksi'] ?? json['stats']?['total_transaksi'] ?? 0,
+      ranking: json['ranking'] ?? json['stats']?['ranking'],
+      levelProgress: (json['level_progress'] ?? 0).toDouble(),
+      transaksiTerbaru: (json['transaksi_terbaru'] as List?)
+              ?.map((e) => Transaksi.fromJson(e))
+              .toList() ??
+          [],
+    );
+  }
+}
+ 
+========== FILE: lib\models\transaksi.dart ========== 
+import 'jenis_sampah.dart';
+import 'bak_sampah.dart';
+
+class Transaksi {
+  final int id;
+  final int? mahasiswaId;
+  final double berat;
+  final int poinDidapat;
+  final String tanggalTransaksi;
+  final String? mahasiswaNama;
+  final String? mahasiswaNim;
+  final JenisSampah? jenisSampah;
+  final BakSampah? bakSampah;
+
+  Transaksi({
+    required this.id,
+    this.mahasiswaId,
+    required this.berat,
+    required this.poinDidapat,
+    required this.tanggalTransaksi,
+    this.mahasiswaNama,
+    this.mahasiswaNim,
+    this.jenisSampah,
+    this.bakSampah,
+  });
+
+  factory Transaksi.fromJson(Map<String, dynamic> json) {
+    return Transaksi(
+      id: json['id'] ?? 0,
+      mahasiswaId: json['mahasiswa_id'],
+      berat: (json['berat'] ?? 0).toDouble(),
+      poinDidapat: json['poin_didapat'] ?? 0,
+      tanggalTransaksi: json['tanggal_transaksi'] ?? '',
+      mahasiswaNama: json['mahasiswa'] != null
+          ? json['mahasiswa']['name']
+          : null,
+      mahasiswaNim: json['mahasiswa'] != null
+          ? json['mahasiswa']['nim']
+          : null,
+      jenisSampah: json['jenis_sampah'] != null
+          ? JenisSampah.fromJson(json['jenis_sampah'])
+          : null,
+      bakSampah: json['bak_sampah'] != null
+          ? BakSampah.fromJson(json['bak_sampah'])
+          : null,
+    );
+  }
+}
+ 
+========== FILE: lib\models\achievement.dart ========== 
+class Achievement {
+  final int id;
+  final String nama;
+  final String? deskripsi;
+  final String? icon;
+  final String syaratType;
+  final int syaratValue;
+  final int poinBonus;
+  final bool isUnlocked;
+  final String? unlockedAt;
+
+  Achievement({
+    required this.id,
+    required this.nama,
+    this.deskripsi,
+    this.icon,
+    required this.syaratType,
+    required this.syaratValue,
+    required this.poinBonus,
+    this.isUnlocked = false,
+    this.unlockedAt,
+  });
+
+  factory Achievement.fromJson(Map<String, dynamic> json) {
+    return Achievement(
+      id: json['id'] ?? 0,
+      nama: json['nama'] ?? '',
+      deskripsi: json['deskripsi'],
+      icon: json['icon'],
+      syaratType: json['syarat_type'] ?? '',
+      syaratValue: json['syarat_value'] ?? 0,
+      poinBonus: json['poin_bonus'] ?? 0,
+      isUnlocked: json['is_unlocked'] ?? false,
+      unlockedAt: json['unlocked_at'] ?? json['pivot']?['unlocked_at'],
+    );
+  }
+
+  String get syaratLabel {
+    switch (syaratType) {
+      case 'total_kg':
+        return 'Kumpulkan $syaratValue kg';
+      case 'streak':
+        return 'Streak $syaratValue hari';
+      case 'transaksi_count':
+        return '$syaratValue transaksi';
+      case 'first_time':
+        return 'Transaksi pertama';
+      default:
+        return syaratType;
+    }
+  }
+}
+ 
+========== FILE: lib\models\leaderboard_entry.dart ========== 
+class LeaderboardEntry {
+  final int mahasiswaId;
+  final String nama;
+  final int totalPoin;
+  final double totalBeratKg;
+  final int ranking;
+  final String? namaLevel;
+  final String? avatar;
+
+  LeaderboardEntry({
+    required this.mahasiswaId,
+    required this.nama,
+    required this.totalPoin,
+    required this.totalBeratKg,
+    required this.ranking,
+    this.namaLevel,
+    this.avatar,
+  });
+
+  factory LeaderboardEntry.fromJson(Map<String, dynamic> json) {
+    // Handle nested mahasiswa object or flat structure
+    final mhs = json['mahasiswa'];
+
+    return LeaderboardEntry(
+      mahasiswaId: json['mahasiswa_id'] ?? mhs?['id'] ?? 0,
+      nama: mhs?['name'] ?? json['nama'] ?? '',
+      totalPoin: mhs?['total_poin'] ?? json['total_poin'] ?? 0,
+      totalBeratKg: (json['total_berat_kg'] ?? 0).toDouble(),
+      ranking: json['ranking'] ??
+          json['ranking_mingguan'] ??
+          json['ranking_bulanan'] ??
+          json['ranking_harian'] ??
+          0,
+      namaLevel: mhs?['level']?['nama_level'] ?? json['nama_level'],
+      avatar: mhs?['avatar'] ?? json['avatar'],
+    );
+  }
+}
+ 
+========== FILE: lib\models\notifikasi.dart ========== 
+class Notifikasi {
+  final int id;
+  final String judul;
+  final String pesan;
+  final String tipe;
+  final bool isRead;
+  final String? createdAt;
+
+  Notifikasi({
+    required this.id,
+    required this.judul,
+    required this.pesan,
+    required this.tipe,
+    required this.isRead,
+    this.createdAt,
+  });
+
+  factory Notifikasi.fromJson(Map<String, dynamic> json) {
+    return Notifikasi(
+      id: json['id'] ?? 0,
+      judul: json['judul'] ?? '',
+      pesan: json['pesan'] ?? '',
+      tipe: json['tipe'] ?? '',
+      isRead: json['is_read'] == 1 || json['is_read'] == true,
+      createdAt: json['created_at'],
+    );
+  }
+
+  String get tipeLabel {
+    switch (tipe) {
+      case 'level_up':
+        return '🎉 Level Up';
+      case 'achievement':
+        return '🏆 Achievement';
+      case 'transaksi':
+        return '♻️ Transaksi';
+      case 'info':
+        return 'ℹ️ Info';
+      default:
+        return tipe;
+    }
+  }
+}
+ 
+========== FILE: lib\models\level.dart ========== 
+class Level {
+  final int id;
+  final String namaLevel;
+  final int minPoin;
+  final int maxPoin;
+  final int urutan;
+
+  Level({
+    required this.id,
+    required this.namaLevel,
+    required this.minPoin,
+    required this.maxPoin,
+    required this.urutan,
+  });
+
+  factory Level.fromJson(Map<String, dynamic> json) {
+    return Level(
+      id: json['id'] ?? 0,
+      namaLevel: json['nama_level'] ?? '',
+      minPoin: json['min_poin'] ?? 0,
+      maxPoin: json['max_poin'] ?? 0,
+      urutan: json['urutan'] ?? 0,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'nama_level': namaLevel,
+      'min_poin': minPoin,
+      'max_poin': maxPoin,
+      'urutan': urutan,
+    };
+  }
+}
+ 
+========== LARAVEL FILES ========== 
+ 
+========== FILE: app\Http\Controllers\Api\DashboardController.php ========== 
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use App\Models\TransaksiSampah;
+use Illuminate\Support\Facades\DB;
+
+class DashboardController extends Controller
+{
+    /**
+     * Get Dashboard Summary
+     * GET /api/dashboard
+     */
+    public function index(Request $request)
+    {
+        $mahasiswa = $request->user();
+
+        // Summary statistik
+        $totalBerat = TransaksiSampah::where('mahasiswa_id', $mahasiswa->id)
+            ->sum('berat');
+
+        $totalTransaksi = TransaksiSampah::where('mahasiswa_id', $mahasiswa->id)
+            ->count();
+
+        $ranking = $mahasiswa->leaderboard->ranking_alltime ?? null;
+
+        // Recent transactions (3 terakhir)
+        $recentTransactions = TransaksiSampah::where('mahasiswa_id', $mahasiswa->id)
+            ->with(['jenisSampah', 'bakSampah.lokasi'])
+            ->orderBy('tanggal_transaksi', 'desc')
+            ->limit(3)
+            ->get()
+            ->map(function ($transaksi) {
+                return [
+                    'id' => $transaksi->id,
+                    'jenis_sampah' => $transaksi->jenisSampah->nama,
+                    'berat' => $transaksi->berat,
+                    'poin' => $transaksi->poin_didapat,
+                    'lokasi' => $transaksi->bakSampah->nama ?? '-',
+                    'tanggal' => $transaksi->tanggal_transaksi,
+                ];
+            });
+
+        // Level progress
+        $currentLevel = $mahasiswa->level;
+        $nextLevel = \App\Models\Level::where('urutan', '>', $currentLevel->urutan)
+            ->orderBy('urutan', 'asc')
+            ->first();
+
+        $levelProgress = 0;
+        if ($nextLevel) {
+            // Fix: pastikan poin mahasiswa >= min_poin level saat ini
+            if ($mahasiswa->total_poin < $currentLevel->min_poin) {
+                // Edge case: poin lebih kecil dari min level (data manual)
+                $levelProgress = 0;
+            } else {
+                $range = $nextLevel->min_poin - $currentLevel->min_poin;
+                $progress = $mahasiswa->total_poin - $currentLevel->min_poin;
+                $levelProgress = min(100, max(0, ($progress / $range) * 100)); // ← Tambahkan max(0, ...)
+            }
+        } else {
+            $levelProgress = 100; // Max level
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'mahasiswa' => [
+                    'name' => $mahasiswa->name,
+                    'avatar' => $mahasiswa->avatar,
+                    'nim' => $mahasiswa->nim,
+                    'prodi' => $mahasiswa->prodi,
+                ],
+                'poin' => [
+                    'total' => $mahasiswa->total_poin,
+                    'level' => $currentLevel->nama_level,
+                    'level_urutan' => $currentLevel->urutan,
+                    'next_level' => $nextLevel ? $nextLevel->nama_level : null,
+                    'progress_percentage' => round($levelProgress, 2),
+                ],
+                'stats' => [
+                    'total_berat_kg' => round($totalBerat, 2),
+                    'total_transaksi' => $totalTransaksi,
+                    'ranking' => $ranking,
+                ],
+                'recent_transactions' => $recentTransactions,
+            ]
+        ], 200);
+    }
+}
+ 
+========== FILE: app\Http\Controllers\Api\ProfileController.php ========== 
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+
+class ProfileController extends Controller
+{
+    /**
+     * Get Profile
+     * GET /api/profile
+     */
+    public function index(Request $request)
+    {
+        $mahasiswa = $request->user();
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'id' => $mahasiswa->id,
+                'name' => $mahasiswa->name,
+                'email' => $mahasiswa->email,
+                'avatar' => $mahasiswa->avatar,
+                'nim' => $mahasiswa->nim,
+                'prodi' => $mahasiswa->prodi,
+                'rfid_uid' => $mahasiswa->rfid_uid,
+                'total_poin' => $mahasiswa->total_poin,
+                'level' => [
+                    'id' => $mahasiswa->level->id,
+                    'nama' => $mahasiswa->level->nama_level,
+                    'min_poin' => $mahasiswa->level->min_poin,
+                    'max_poin' => $mahasiswa->level->max_poin,
+                ],
+            ]
+        ], 200);
+    }
+
+    /**
+     * Update Profile
+     * PUT /api/profile
+     */
+    public function update(Request $request)
+    {
+        $mahasiswa = $request->user();
+
+        $validator = Validator::make($request->all(), [
+            'name' => 'sometimes|string|max:100',
+            'nim' => 'sometimes|string|max:20',
+            'prodi' => 'sometimes|string|max:30',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi gagal',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $mahasiswa->update($request->only(['name', 'nim', 'prodi']));
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Profil berhasil diperbarui',
+            'data' => [
+                'name' => $mahasiswa->name,
+                'nim' => $mahasiswa->nim,
+                'prodi' => $mahasiswa->prodi,
+            ]
+        ], 200);
+    }
+
+    /**
+     * Register/Update RFID
+     * POST /api/profile/rfid
+     */
+    public function updateRfid(Request $request)
+    {
+        $mahasiswa = $request->user();
+
+        $validator = Validator::make($request->all(), [
+            'rfid_uid' => 'required|string|max:20|unique:mahasiswa,rfid_uid,' . $mahasiswa->id,
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi gagal',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $mahasiswa->update(['rfid_uid' => $request->rfid_uid]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'RFID berhasil didaftarkan',
+            'data' => [
+                'rfid_uid' => $mahasiswa->rfid_uid
+            ]
+        ], 200);
+    }
+
+    /**
+     * Update FCM Token (for push notification)
+     * POST /api/profile/fcm-token
+     */
+    public function updateFcmToken(Request $request)
+    {
+        $mahasiswa = $request->user();
+
+        $validator = Validator::make($request->all(), [
+            'fcm_token' => 'required|string|max:255',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi gagal',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $mahasiswa->update(['fcm_token' => $request->fcm_token]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'FCM Token berhasil diperbarui'
+        ], 200);
+    }
+}
+ 
+========== FILE: app\Http\Controllers\Api\TransaksiController.php ========== 
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use App\Models\TransaksiSampah;
+
+class TransaksiController extends Controller
+{
+    /**
+     * Get List Transaksi (with pagination)
+     * GET /api/transaksi
+     */
+    public function index(Request $request)
+    {
+        $mahasiswa = $request->user();
+
+        // Filter by period (optional)
+        $period = $request->query('period', 'all'); // all, 7days, 30days
+
+        $query = TransaksiSampah::where('mahasiswa_id', $mahasiswa->id)
+            ->with(['jenisSampah', 'bakSampah.lokasi']);
+
+        if ($period === '7days') {
+            $query->where('tanggal_transaksi', '>=', now()->subDays(7));
+        } elseif ($period === '30days') {
+            $query->where('tanggal_transaksi', '>=', now()->subDays(30));
+        }
+
+        $transaksi = $query->orderBy('tanggal_transaksi', 'desc')
+            ->paginate(10)
+            ->through(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'jenis_sampah' => $item->jenisSampah->nama,
+                    'berat' => $item->berat,
+                    'poin' => $item->poin_didapat,
+                    'bak_sampah' => $item->bakSampah->nama ?? '-',
+                    'lokasi' => $item->bakSampah->lokasi->nama_lokasi ?? '-',
+                    'tanggal' => $item->tanggal_transaksi,
+                ];
+            });
+
+        return response()->json([
+            'success' => true,
+            'data' => $transaksi
+        ], 200);
+    }
+
+    /**
+     * Get Detail Transaksi
+     * GET /api/transaksi/{id}
+     */
+    public function show(Request $request, $id)
+    {
+        $mahasiswa = $request->user();
+
+        $transaksi = TransaksiSampah::where('id', $id)
+            ->where('mahasiswa_id', $mahasiswa->id)
+            ->with(['jenisSampah', 'bakSampah.lokasi'])
+            ->first();
+
+        if (!$transaksi) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Transaksi tidak ditemukan'
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'id' => $transaksi->id,
+                'jenis_sampah' => [
+                    'id' => $transaksi->jenisSampah->id,
+                    'nama' => $transaksi->jenisSampah->nama,
+                    'poin_per_kg' => $transaksi->jenisSampah->poin_per_kg,
+                ],
+                'berat' => $transaksi->berat,
+                'poin_didapat' => $transaksi->poin_didapat,
+                'bak_sampah' => [
+                    'nama' => $transaksi->bakSampah->nama ?? '-',
+                    'lokasi' => $transaksi->bakSampah->lokasi->nama_lokasi ?? '-',
+                ],
+                'tanggal_transaksi' => $transaksi->tanggal_transaksi,
+            ]
+        ], 200);
+    }
+}

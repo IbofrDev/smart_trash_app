@@ -1,0 +1,2974 @@
+========== FLUTTER AUTH 
+ 
+========== FILE: lib\screens\login_screen.dart ========== 
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../config/app_theme.dart';
+import '../providers/auth_provider.dart';
+
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  bool _isLoading = false;
+
+  Future<void> _handleGoogleSignIn() async {
+    setState(() => _isLoading = true);
+
+    final authProvider = context.read<AuthProvider>();
+    final success = await authProvider.loginWithGoogle();
+
+    if (!mounted) return;
+
+    setState(() => _isLoading = false);
+
+    if (success) {
+      Navigator.pushReplacementNamed(context, '/dashboard');
+    } else {
+      final errorMsg = authProvider.errorMessage ?? 'Login gagal';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(errorMsg),
+          backgroundColor: AppTheme.dangerColor,
+        ),
+      );
+    }
+  }
+
+    // TEMPORARY: Mock login untuk testing (HAPUS sebelum production)
+  Future<void> _handleMockLogin() async {
+    setState(() => _isLoading = true);
+
+    final authProvider = context.read<AuthProvider>();
+    final success = await authProvider.mockLogin();
+
+    if (!mounted) return;
+
+    setState(() => _isLoading = false);
+
+    if (success) {
+      Navigator.pushReplacementNamed(context, '/dashboard');
+    } else {
+      final errorMsg = authProvider.errorMessage ?? 'Mock login gagal';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(errorMsg),
+          backgroundColor: AppTheme.dangerColor,
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            children: [
+              const Spacer(flex: 2),
+              // Logo & Branding
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryColor.withValues(alpha:0.1),
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: const Icon(
+                  Icons.recycling,
+                  size: 80,
+                  color: AppTheme.primaryColor,
+                ),
+              ),
+              const SizedBox(height: 32),
+              const Text(
+                'Smart Trash',
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.darkColor,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Sistem Bank Sampah Kampus\ndengan Gamifikasi',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey[600],
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const Spacer(flex: 2),
+              // Features
+              _buildFeatureItem(
+                Icons.qr_code_scanner,
+                'Scan & Setor Sampah',
+              ),
+              const SizedBox(height: 12),
+              _buildFeatureItem(
+                Icons.emoji_events,
+                'Kumpulkan Poin & Achievement',
+              ),
+              const SizedBox(height: 12),
+              _buildFeatureItem(
+                Icons.leaderboard,
+                'Bersaing di Leaderboard',
+              ),
+              const Spacer(flex: 2),
+              // Google Sign In Button
+              SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: ElevatedButton(
+                  onPressed: _isLoading ? null : _handleGoogleSignIn,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: Colors.black87,
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: BorderSide(color: Colors.grey[300]!),
+                    ),
+                  ),
+                  child: _isLoading
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Image.network(
+                              'https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg',
+                              height: 24,
+                              width: 24,
+                              errorBuilder: (_, __, ___) => const Icon(
+                                Icons.g_mobiledata,
+                                size: 24,
+                                color: Colors.red,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            const Text(
+                              'Masuk dengan Google',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Gunakan akun Google kampus Anda',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey[500],
+                ),
+              ),
+                            const SizedBox(height: 24),
+              // TEMPORARY: Mock Login Button (HAPUS sebelum production)
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: OutlinedButton.icon(
+                  onPressed: _isLoading ? null : _handleMockLogin,
+                  icon: const Icon(Icons.bug_report),
+                  label: const Text('Mock Login (Testing)'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.orange,
+                    side: const BorderSide(color: Colors.orange),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+              const Spacer(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFeatureItem(IconData icon, String text) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: AppTheme.primaryColor.withValues(alpha:0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            icon,
+            color: AppTheme.primaryColor,
+            size: 20,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Text(
+          text,
+          style: const TextStyle(
+            fontSize: 14,
+            color: Colors.black87,
+          ),
+        ),
+      ],
+    );
+  }
+}
+ 
+========== FLUTTER CONFIG ========== 
+ 
+========== FILE: android\app\src\main\AndroidManifest.xml ========== 
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <application
+        android:label="Smart Trash"
+        android:name="${applicationName}"
+        android:icon="@mipmap/ic_launcher"
+        android:usesCleartextTraffic="true">
+        <!-- ... activity dst tetap biarkan ... -->
+    </application>
+</manifest>
+ 
+========== FLUTTER MODELS/STORAGE ========== 
+ 
+========== FILE: lib\models\mahasiswa.dart ========== 
+import 'level.dart';
+
+class Mahasiswa {
+  final int id;
+  final String? googleId;
+  final String email;
+  final String name;
+  final String? nim;
+  final String? prodi;
+  final String? rfidUid;
+  final int totalPoin;
+  final int? levelId;
+  final Level? level;
+  final String? avatar;
+
+  Mahasiswa({
+    required this.id,
+    this.googleId,
+    required this.email,
+    required this.name,
+    this.nim,
+    this.prodi,
+    this.rfidUid,
+    required this.totalPoin,
+    this.levelId,
+    this.level,
+    this.avatar,
+  });
+
+  factory Mahasiswa.fromJson(Map<String, dynamic> json) {
+    return Mahasiswa(
+      id: json['id'] ?? 0,
+      googleId: json['google_id'],
+      email: json['email'] ?? '',
+      name: json['name'] ?? '',
+      nim: json['nim'],
+      prodi: json['prodi'],
+      rfidUid: json['rfid_uid'],
+      totalPoin: json['total_poin'] ?? 0,
+      levelId: json['level_id'],
+      level: json['level'] != null ? Level.fromJson(json['level']) : null,
+      avatar: json['avatar'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'nim': nim,
+      'prodi': prodi,
+    };
+  }
+}
+ 
+========== FILE: lib\models\api_response.dart ========== 
+class ApiResponse {
+  final bool success;
+  final String message;
+  final dynamic data;
+
+  ApiResponse({
+    required this.success,
+    required this.message,
+    this.data,
+  });
+
+  factory ApiResponse.fromJson(Map<String, dynamic> json) {
+    return ApiResponse(
+      success: json['success'] ?? false,
+      message: json['message'] ?? '',
+      data: json['data'],
+    );
+  }
+}
+ 
+========== FILE: lib\services\storage_service.dart ========== 
+import 'package:shared_preferences/shared_preferences.dart';
+
+class StorageService {
+  static const String _tokenKey = 'auth_token';
+  static const String _userIdKey = 'user_id';
+
+  static Future<void> saveToken(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_tokenKey, token);
+  }
+
+  static Future<String?> getToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_tokenKey);
+  }
+
+  static Future<void> saveUserId(int id) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_userIdKey, id);
+  }
+
+  static Future<int?> getUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt(_userIdKey);
+  }
+
+  static Future<void> clearAll() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+  }
+
+  static Future<bool> hasToken() async {
+    final token = await getToken();
+    return token != null && token.isNotEmpty;
+  }
+}
+ 
+========== FILE: android\app\src\debug\AndroidManifest.xml ========== 
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- The INTERNET permission is required for development. Specifically,
+         the Flutter tool needs it to communicate with the running application
+         to allow setting breakpoints, to provide hot reload, etc.
+    -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+</manifest>
+
+ 
+========== FLUTTER MODELS/STORAGE ========== 
+ 
+========== FILE: lib\models\mahasiswa.dart ========== 
+import 'level.dart';
+
+class Mahasiswa {
+  final int id;
+  final String? googleId;
+  final String email;
+  final String name;
+  final String? nim;
+  final String? prodi;
+  final String? rfidUid;
+  final int totalPoin;
+  final int? levelId;
+  final Level? level;
+  final String? avatar;
+
+  Mahasiswa({
+    required this.id,
+    this.googleId,
+    required this.email,
+    required this.name,
+    this.nim,
+    this.prodi,
+    this.rfidUid,
+    required this.totalPoin,
+    this.levelId,
+    this.level,
+    this.avatar,
+  });
+
+  factory Mahasiswa.fromJson(Map<String, dynamic> json) {
+    return Mahasiswa(
+      id: json['id'] ?? 0,
+      googleId: json['google_id'],
+      email: json['email'] ?? '',
+      name: json['name'] ?? '',
+      nim: json['nim'],
+      prodi: json['prodi'],
+      rfidUid: json['rfid_uid'],
+      totalPoin: json['total_poin'] ?? 0,
+      levelId: json['level_id'],
+      level: json['level'] != null ? Level.fromJson(json['level']) : null,
+      avatar: json['avatar'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'nim': nim,
+      'prodi': prodi,
+    };
+  }
+}
+ 
+========== FILE: lib\models\api_response.dart ========== 
+class ApiResponse {
+  final bool success;
+  final String message;
+  final dynamic data;
+
+  ApiResponse({
+    required this.success,
+    required this.message,
+    this.data,
+  });
+
+  factory ApiResponse.fromJson(Map<String, dynamic> json) {
+    return ApiResponse(
+      success: json['success'] ?? false,
+      message: json['message'] ?? '',
+      data: json['data'],
+    );
+  }
+}
+ 
+========== FILE: lib\services\storage_service.dart ========== 
+import 'package:shared_preferences/shared_preferences.dart';
+
+class StorageService {
+  static const String _tokenKey = 'auth_token';
+  static const String _userIdKey = 'user_id';
+
+  static Future<void> saveToken(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_tokenKey, token);
+  }
+
+  static Future<String?> getToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_tokenKey);
+  }
+
+  static Future<void> saveUserId(int id) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_userIdKey, id);
+  }
+
+  static Future<int?> getUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt(_userIdKey);
+  }
+
+  static Future<void> clearAll() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+  }
+
+  static Future<bool> hasToken() async {
+    final token = await getToken();
+    return token != null && token.isNotEmpty;
+  }
+}
+ 
+========== FILE: pubspec.yaml ========== 
+name: smart_trash_app
+description: Sistem Tempat Sampah Pintar - Mobile App Mahasiswa
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.5.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  provider: ^6.1.2
+  http: ^1.2.2
+  google_sign_in: ^6.2.1
+  shared_preferences: ^2.3.2
+  intl: ^0.19.0
+  percent_indicator: ^4.2.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+ 
+========== FLUTTER MODELS/STORAGE ========== 
+ 
+========== FILE: lib\models\mahasiswa.dart ========== 
+import 'level.dart';
+
+class Mahasiswa {
+  final int id;
+  final String? googleId;
+  final String email;
+  final String name;
+  final String? nim;
+  final String? prodi;
+  final String? rfidUid;
+  final int totalPoin;
+  final int? levelId;
+  final Level? level;
+  final String? avatar;
+
+  Mahasiswa({
+    required this.id,
+    this.googleId,
+    required this.email,
+    required this.name,
+    this.nim,
+    this.prodi,
+    this.rfidUid,
+    required this.totalPoin,
+    this.levelId,
+    this.level,
+    this.avatar,
+  });
+
+  factory Mahasiswa.fromJson(Map<String, dynamic> json) {
+    return Mahasiswa(
+      id: json['id'] ?? 0,
+      googleId: json['google_id'],
+      email: json['email'] ?? '',
+      name: json['name'] ?? '',
+      nim: json['nim'],
+      prodi: json['prodi'],
+      rfidUid: json['rfid_uid'],
+      totalPoin: json['total_poin'] ?? 0,
+      levelId: json['level_id'],
+      level: json['level'] != null ? Level.fromJson(json['level']) : null,
+      avatar: json['avatar'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'nim': nim,
+      'prodi': prodi,
+    };
+  }
+}
+ 
+========== FILE: lib\models\api_response.dart ========== 
+class ApiResponse {
+  final bool success;
+  final String message;
+  final dynamic data;
+
+  ApiResponse({
+    required this.success,
+    required this.message,
+    this.data,
+  });
+
+  factory ApiResponse.fromJson(Map<String, dynamic> json) {
+    return ApiResponse(
+      success: json['success'] ?? false,
+      message: json['message'] ?? '',
+      data: json['data'],
+    );
+  }
+}
+ 
+========== FILE: lib\services\storage_service.dart ========== 
+import 'package:shared_preferences/shared_preferences.dart';
+
+class StorageService {
+  static const String _tokenKey = 'auth_token';
+  static const String _userIdKey = 'user_id';
+
+  static Future<void> saveToken(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_tokenKey, token);
+  }
+
+  static Future<String?> getToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_tokenKey);
+  }
+
+  static Future<void> saveUserId(int id) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_userIdKey, id);
+  }
+
+  static Future<int?> getUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt(_userIdKey);
+  }
+
+  static Future<void> clearAll() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+  }
+
+  static Future<bool> hasToken() async {
+    final token = await getToken();
+    return token != null && token.isNotEmpty;
+  }
+}
+ 
+========== FILE: lib\providers\auth_provider.dart ========== 
+import 'package:flutter/material.dart';
+import '../models/mahasiswa.dart';
+import '../services/api_service.dart';
+import '../services/auth_service.dart';
+import '../services/storage_service.dart';
+
+enum AuthStatus { initial, loading, authenticated, unauthenticated, error }
+
+class AuthProvider extends ChangeNotifier {
+  AuthStatus _status = AuthStatus.initial;
+  Mahasiswa? _mahasiswa;
+  String? _errorMessage;
+
+  AuthStatus get status => _status;
+  Mahasiswa? get mahasiswa => _mahasiswa;
+  String? get errorMessage => _errorMessage;
+  bool get isAuthenticated => _status == AuthStatus.authenticated;
+
+  /// Cek apakah sudah login (dari token yang tersimpan)
+  Future<void> checkAuth() async {
+    _status = AuthStatus.loading;
+    notifyListeners();
+
+    try {
+      final hasToken = await StorageService.hasToken();
+      if (!hasToken) {
+        _status = AuthStatus.unauthenticated;
+        notifyListeners();
+        return;
+      }
+
+      // Verify token masih valid dengan fetch profile
+      final response = await ApiService.getProfile();
+      if (response.success && response.data != null) {
+        _mahasiswa = Mahasiswa.fromJson(response.data);
+        _status = AuthStatus.authenticated;
+      } else {
+        await StorageService.clearAll();
+        _status = AuthStatus.unauthenticated;
+      }
+    } catch (e) {
+      await StorageService.clearAll();
+      _status = AuthStatus.unauthenticated;
+    }
+    notifyListeners();
+  }
+
+  /// Login dengan Google
+  Future<bool> loginWithGoogle() async {
+    _status = AuthStatus.loading;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      // Step 1: Google Sign-In → dapatkan ID Token
+      final idToken = await AuthService.signInWithGoogle();
+      if (idToken == null) {
+        _status = AuthStatus.unauthenticated;
+        _errorMessage = 'Login dibatalkan';
+        notifyListeners();
+        return false;
+      }
+
+      // Step 2: Kirim ID Token ke Laravel API
+      final response = await ApiService.loginGoogle(idToken);
+
+      if (response.success && response.data != null) {
+        // Simpan token & user data
+        final token = response.data['token'] as String;
+        final userData = response.data['mahasiswa'] ?? response.data['user'];
+
+        await StorageService.saveToken(token);
+
+        _mahasiswa = Mahasiswa.fromJson(userData);
+        await StorageService.saveUserId(_mahasiswa!.id);
+
+        _status = AuthStatus.authenticated;
+        notifyListeners();
+        return true;
+      } else {
+        _status = AuthStatus.unauthenticated;
+        _errorMessage = response.message;
+        notifyListeners();
+        return false;
+      }
+    } catch (e) {
+      _status = AuthStatus.error;
+      _errorMessage = 'Gagal login: ${e.toString()}';
+      notifyListeners();
+      return false;
+    }
+  }
+
+  // TEMPORARY: Mock login untuk testing (HAPUS sebelum production)
+  Future<bool> mockLogin() async {
+    _status = AuthStatus.loading;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final response = await ApiService.mockLogin();
+
+      if (response.success && response.data != null) {
+        final token = response.data['token'] as String;
+        final userData = response.data['mahasiswa'];
+
+        await StorageService.saveToken(token);
+        _mahasiswa = Mahasiswa.fromJson(userData);
+        await StorageService.saveUserId(_mahasiswa!.id);
+
+        _status = AuthStatus.authenticated;
+        notifyListeners();
+        return true;
+      } else {
+        _status = AuthStatus.unauthenticated;
+        _errorMessage = response.message;
+        notifyListeners();
+        return false;
+      }
+    } catch (e) {
+      _status = AuthStatus.error;
+      _errorMessage = 'Mock login gagal: ${e.toString()}';
+      notifyListeners();
+      return false;
+    }
+  }
+
+  /// Logout
+  Future<void> logout() async {
+    try {
+      await ApiService.logout();
+    } catch (_) {}
+
+    await AuthService.signOut();
+    await StorageService.clearAll();
+
+    _mahasiswa = null;
+    _status = AuthStatus.unauthenticated;
+    _errorMessage = null;
+    notifyListeners();
+  }
+
+  /// Update local mahasiswa data (setelah edit profile)
+  void updateMahasiswa(Mahasiswa updated) {
+    _mahasiswa = updated;
+    notifyListeners();
+  }
+}
+
+ 
+========== FLUTTER CONFIG ========== 
+ 
+========== FILE: android\app\src\main\AndroidManifest.xml ========== 
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <application
+        android:label="Smart Trash"
+        android:name="${applicationName}"
+        android:icon="@mipmap/ic_launcher"
+        android:usesCleartextTraffic="true">
+        <!-- ... activity dst tetap biarkan ... -->
+    </application>
+</manifest>
+ 
+========== FLUTTER MODELS/STORAGE ========== 
+ 
+========== FILE: lib\models\mahasiswa.dart ========== 
+import 'level.dart';
+
+class Mahasiswa {
+  final int id;
+  final String? googleId;
+  final String email;
+  final String name;
+  final String? nim;
+  final String? prodi;
+  final String? rfidUid;
+  final int totalPoin;
+  final int? levelId;
+  final Level? level;
+  final String? avatar;
+
+  Mahasiswa({
+    required this.id,
+    this.googleId,
+    required this.email,
+    required this.name,
+    this.nim,
+    this.prodi,
+    this.rfidUid,
+    required this.totalPoin,
+    this.levelId,
+    this.level,
+    this.avatar,
+  });
+
+  factory Mahasiswa.fromJson(Map<String, dynamic> json) {
+    return Mahasiswa(
+      id: json['id'] ?? 0,
+      googleId: json['google_id'],
+      email: json['email'] ?? '',
+      name: json['name'] ?? '',
+      nim: json['nim'],
+      prodi: json['prodi'],
+      rfidUid: json['rfid_uid'],
+      totalPoin: json['total_poin'] ?? 0,
+      levelId: json['level_id'],
+      level: json['level'] != null ? Level.fromJson(json['level']) : null,
+      avatar: json['avatar'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'nim': nim,
+      'prodi': prodi,
+    };
+  }
+}
+ 
+========== FILE: lib\models\api_response.dart ========== 
+class ApiResponse {
+  final bool success;
+  final String message;
+  final dynamic data;
+
+  ApiResponse({
+    required this.success,
+    required this.message,
+    this.data,
+  });
+
+  factory ApiResponse.fromJson(Map<String, dynamic> json) {
+    return ApiResponse(
+      success: json['success'] ?? false,
+      message: json['message'] ?? '',
+      data: json['data'],
+    );
+  }
+}
+ 
+========== FILE: lib\services\storage_service.dart ========== 
+import 'package:shared_preferences/shared_preferences.dart';
+
+class StorageService {
+  static const String _tokenKey = 'auth_token';
+  static const String _userIdKey = 'user_id';
+
+  static Future<void> saveToken(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_tokenKey, token);
+  }
+
+  static Future<String?> getToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_tokenKey);
+  }
+
+  static Future<void> saveUserId(int id) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_userIdKey, id);
+  }
+
+  static Future<int?> getUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt(_userIdKey);
+  }
+
+  static Future<void> clearAll() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+  }
+
+  static Future<bool> hasToken() async {
+    final token = await getToken();
+    return token != null && token.isNotEmpty;
+  }
+}
+ 
+========== FILE: android\app\src\debug\AndroidManifest.xml ========== 
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- The INTERNET permission is required for development. Specifically,
+         the Flutter tool needs it to communicate with the running application
+         to allow setting breakpoints, to provide hot reload, etc.
+    -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+</manifest>
+
+ 
+========== FLUTTER MODELS/STORAGE ========== 
+ 
+========== FILE: lib\models\mahasiswa.dart ========== 
+import 'level.dart';
+
+class Mahasiswa {
+  final int id;
+  final String? googleId;
+  final String email;
+  final String name;
+  final String? nim;
+  final String? prodi;
+  final String? rfidUid;
+  final int totalPoin;
+  final int? levelId;
+  final Level? level;
+  final String? avatar;
+
+  Mahasiswa({
+    required this.id,
+    this.googleId,
+    required this.email,
+    required this.name,
+    this.nim,
+    this.prodi,
+    this.rfidUid,
+    required this.totalPoin,
+    this.levelId,
+    this.level,
+    this.avatar,
+  });
+
+  factory Mahasiswa.fromJson(Map<String, dynamic> json) {
+    return Mahasiswa(
+      id: json['id'] ?? 0,
+      googleId: json['google_id'],
+      email: json['email'] ?? '',
+      name: json['name'] ?? '',
+      nim: json['nim'],
+      prodi: json['prodi'],
+      rfidUid: json['rfid_uid'],
+      totalPoin: json['total_poin'] ?? 0,
+      levelId: json['level_id'],
+      level: json['level'] != null ? Level.fromJson(json['level']) : null,
+      avatar: json['avatar'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'nim': nim,
+      'prodi': prodi,
+    };
+  }
+}
+ 
+========== FILE: lib\models\api_response.dart ========== 
+class ApiResponse {
+  final bool success;
+  final String message;
+  final dynamic data;
+
+  ApiResponse({
+    required this.success,
+    required this.message,
+    this.data,
+  });
+
+  factory ApiResponse.fromJson(Map<String, dynamic> json) {
+    return ApiResponse(
+      success: json['success'] ?? false,
+      message: json['message'] ?? '',
+      data: json['data'],
+    );
+  }
+}
+ 
+========== FILE: lib\services\storage_service.dart ========== 
+import 'package:shared_preferences/shared_preferences.dart';
+
+class StorageService {
+  static const String _tokenKey = 'auth_token';
+  static const String _userIdKey = 'user_id';
+
+  static Future<void> saveToken(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_tokenKey, token);
+  }
+
+  static Future<String?> getToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_tokenKey);
+  }
+
+  static Future<void> saveUserId(int id) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_userIdKey, id);
+  }
+
+  static Future<int?> getUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt(_userIdKey);
+  }
+
+  static Future<void> clearAll() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+  }
+
+  static Future<bool> hasToken() async {
+    final token = await getToken();
+    return token != null && token.isNotEmpty;
+  }
+}
+ 
+========== FILE: pubspec.yaml ========== 
+name: smart_trash_app
+description: Sistem Tempat Sampah Pintar - Mobile App Mahasiswa
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.5.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  provider: ^6.1.2
+  http: ^1.2.2
+  google_sign_in: ^6.2.1
+  shared_preferences: ^2.3.2
+  intl: ^0.19.0
+  percent_indicator: ^4.2.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+ 
+========== FLUTTER MODELS/STORAGE ========== 
+ 
+========== FILE: lib\models\mahasiswa.dart ========== 
+import 'level.dart';
+
+class Mahasiswa {
+  final int id;
+  final String? googleId;
+  final String email;
+  final String name;
+  final String? nim;
+  final String? prodi;
+  final String? rfidUid;
+  final int totalPoin;
+  final int? levelId;
+  final Level? level;
+  final String? avatar;
+
+  Mahasiswa({
+    required this.id,
+    this.googleId,
+    required this.email,
+    required this.name,
+    this.nim,
+    this.prodi,
+    this.rfidUid,
+    required this.totalPoin,
+    this.levelId,
+    this.level,
+    this.avatar,
+  });
+
+  factory Mahasiswa.fromJson(Map<String, dynamic> json) {
+    return Mahasiswa(
+      id: json['id'] ?? 0,
+      googleId: json['google_id'],
+      email: json['email'] ?? '',
+      name: json['name'] ?? '',
+      nim: json['nim'],
+      prodi: json['prodi'],
+      rfidUid: json['rfid_uid'],
+      totalPoin: json['total_poin'] ?? 0,
+      levelId: json['level_id'],
+      level: json['level'] != null ? Level.fromJson(json['level']) : null,
+      avatar: json['avatar'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'nim': nim,
+      'prodi': prodi,
+    };
+  }
+}
+ 
+========== FILE: lib\models\api_response.dart ========== 
+class ApiResponse {
+  final bool success;
+  final String message;
+  final dynamic data;
+
+  ApiResponse({
+    required this.success,
+    required this.message,
+    this.data,
+  });
+
+  factory ApiResponse.fromJson(Map<String, dynamic> json) {
+    return ApiResponse(
+      success: json['success'] ?? false,
+      message: json['message'] ?? '',
+      data: json['data'],
+    );
+  }
+}
+ 
+========== FILE: lib\services\storage_service.dart ========== 
+import 'package:shared_preferences/shared_preferences.dart';
+
+class StorageService {
+  static const String _tokenKey = 'auth_token';
+  static const String _userIdKey = 'user_id';
+
+  static Future<void> saveToken(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_tokenKey, token);
+  }
+
+  static Future<String?> getToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_tokenKey);
+  }
+
+  static Future<void> saveUserId(int id) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_userIdKey, id);
+  }
+
+  static Future<int?> getUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt(_userIdKey);
+  }
+
+  static Future<void> clearAll() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+  }
+
+  static Future<bool> hasToken() async {
+    final token = await getToken();
+    return token != null && token.isNotEmpty;
+  }
+}
+ 
+========== FILE: lib\services\auth_service.dart ========== 
+import 'package:google_sign_in/google_sign_in.dart';
+import '../config/api_config.dart';
+
+class AuthService {
+  static final GoogleSignIn _googleSignIn = GoogleSignIn(
+    serverClientId: ApiConfig.googleServerClientId,
+    scopes: ['email', 'profile'],
+  );
+
+  /// Login dengan Google, return ID Token
+  static Future<String?> signInWithGoogle() async {
+    try {
+      // Sign out dulu untuk force pilih akun
+      await _googleSignIn.signOut();
+
+      final account = await _googleSignIn.signIn();
+      if (account == null) return null; // User cancelled
+
+      final auth = await account.authentication;
+      return auth.idToken;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Sign out dari Google
+  static Future<void> signOut() async {
+    try {
+      await _googleSignIn.signOut();
+    } catch (_) {}
+  }
+}
+ 
+========== FLUTTER CONFIG ========== 
+ 
+========== FILE: android\app\src\main\AndroidManifest.xml ========== 
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <application
+        android:label="Smart Trash"
+        android:name="${applicationName}"
+        android:icon="@mipmap/ic_launcher"
+        android:usesCleartextTraffic="true">
+        <!-- ... activity dst tetap biarkan ... -->
+    </application>
+</manifest>
+ 
+========== FLUTTER MODELS/STORAGE ========== 
+ 
+========== FILE: lib\models\mahasiswa.dart ========== 
+import 'level.dart';
+
+class Mahasiswa {
+  final int id;
+  final String? googleId;
+  final String email;
+  final String name;
+  final String? nim;
+  final String? prodi;
+  final String? rfidUid;
+  final int totalPoin;
+  final int? levelId;
+  final Level? level;
+  final String? avatar;
+
+  Mahasiswa({
+    required this.id,
+    this.googleId,
+    required this.email,
+    required this.name,
+    this.nim,
+    this.prodi,
+    this.rfidUid,
+    required this.totalPoin,
+    this.levelId,
+    this.level,
+    this.avatar,
+  });
+
+  factory Mahasiswa.fromJson(Map<String, dynamic> json) {
+    return Mahasiswa(
+      id: json['id'] ?? 0,
+      googleId: json['google_id'],
+      email: json['email'] ?? '',
+      name: json['name'] ?? '',
+      nim: json['nim'],
+      prodi: json['prodi'],
+      rfidUid: json['rfid_uid'],
+      totalPoin: json['total_poin'] ?? 0,
+      levelId: json['level_id'],
+      level: json['level'] != null ? Level.fromJson(json['level']) : null,
+      avatar: json['avatar'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'nim': nim,
+      'prodi': prodi,
+    };
+  }
+}
+ 
+========== FILE: lib\models\api_response.dart ========== 
+class ApiResponse {
+  final bool success;
+  final String message;
+  final dynamic data;
+
+  ApiResponse({
+    required this.success,
+    required this.message,
+    this.data,
+  });
+
+  factory ApiResponse.fromJson(Map<String, dynamic> json) {
+    return ApiResponse(
+      success: json['success'] ?? false,
+      message: json['message'] ?? '',
+      data: json['data'],
+    );
+  }
+}
+ 
+========== FILE: lib\services\storage_service.dart ========== 
+import 'package:shared_preferences/shared_preferences.dart';
+
+class StorageService {
+  static const String _tokenKey = 'auth_token';
+  static const String _userIdKey = 'user_id';
+
+  static Future<void> saveToken(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_tokenKey, token);
+  }
+
+  static Future<String?> getToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_tokenKey);
+  }
+
+  static Future<void> saveUserId(int id) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_userIdKey, id);
+  }
+
+  static Future<int?> getUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt(_userIdKey);
+  }
+
+  static Future<void> clearAll() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+  }
+
+  static Future<bool> hasToken() async {
+    final token = await getToken();
+    return token != null && token.isNotEmpty;
+  }
+}
+ 
+========== FILE: android\app\src\debug\AndroidManifest.xml ========== 
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- The INTERNET permission is required for development. Specifically,
+         the Flutter tool needs it to communicate with the running application
+         to allow setting breakpoints, to provide hot reload, etc.
+    -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+</manifest>
+
+ 
+========== FLUTTER MODELS/STORAGE ========== 
+ 
+========== FILE: lib\models\mahasiswa.dart ========== 
+import 'level.dart';
+
+class Mahasiswa {
+  final int id;
+  final String? googleId;
+  final String email;
+  final String name;
+  final String? nim;
+  final String? prodi;
+  final String? rfidUid;
+  final int totalPoin;
+  final int? levelId;
+  final Level? level;
+  final String? avatar;
+
+  Mahasiswa({
+    required this.id,
+    this.googleId,
+    required this.email,
+    required this.name,
+    this.nim,
+    this.prodi,
+    this.rfidUid,
+    required this.totalPoin,
+    this.levelId,
+    this.level,
+    this.avatar,
+  });
+
+  factory Mahasiswa.fromJson(Map<String, dynamic> json) {
+    return Mahasiswa(
+      id: json['id'] ?? 0,
+      googleId: json['google_id'],
+      email: json['email'] ?? '',
+      name: json['name'] ?? '',
+      nim: json['nim'],
+      prodi: json['prodi'],
+      rfidUid: json['rfid_uid'],
+      totalPoin: json['total_poin'] ?? 0,
+      levelId: json['level_id'],
+      level: json['level'] != null ? Level.fromJson(json['level']) : null,
+      avatar: json['avatar'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'nim': nim,
+      'prodi': prodi,
+    };
+  }
+}
+ 
+========== FILE: lib\models\api_response.dart ========== 
+class ApiResponse {
+  final bool success;
+  final String message;
+  final dynamic data;
+
+  ApiResponse({
+    required this.success,
+    required this.message,
+    this.data,
+  });
+
+  factory ApiResponse.fromJson(Map<String, dynamic> json) {
+    return ApiResponse(
+      success: json['success'] ?? false,
+      message: json['message'] ?? '',
+      data: json['data'],
+    );
+  }
+}
+ 
+========== FILE: lib\services\storage_service.dart ========== 
+import 'package:shared_preferences/shared_preferences.dart';
+
+class StorageService {
+  static const String _tokenKey = 'auth_token';
+  static const String _userIdKey = 'user_id';
+
+  static Future<void> saveToken(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_tokenKey, token);
+  }
+
+  static Future<String?> getToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_tokenKey);
+  }
+
+  static Future<void> saveUserId(int id) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_userIdKey, id);
+  }
+
+  static Future<int?> getUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt(_userIdKey);
+  }
+
+  static Future<void> clearAll() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+  }
+
+  static Future<bool> hasToken() async {
+    final token = await getToken();
+    return token != null && token.isNotEmpty;
+  }
+}
+ 
+========== FILE: pubspec.yaml ========== 
+name: smart_trash_app
+description: Sistem Tempat Sampah Pintar - Mobile App Mahasiswa
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.5.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  provider: ^6.1.2
+  http: ^1.2.2
+  google_sign_in: ^6.2.1
+  shared_preferences: ^2.3.2
+  intl: ^0.19.0
+  percent_indicator: ^4.2.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+ 
+========== FLUTTER MODELS/STORAGE ========== 
+ 
+========== FILE: lib\models\mahasiswa.dart ========== 
+import 'level.dart';
+
+class Mahasiswa {
+  final int id;
+  final String? googleId;
+  final String email;
+  final String name;
+  final String? nim;
+  final String? prodi;
+  final String? rfidUid;
+  final int totalPoin;
+  final int? levelId;
+  final Level? level;
+  final String? avatar;
+
+  Mahasiswa({
+    required this.id,
+    this.googleId,
+    required this.email,
+    required this.name,
+    this.nim,
+    this.prodi,
+    this.rfidUid,
+    required this.totalPoin,
+    this.levelId,
+    this.level,
+    this.avatar,
+  });
+
+  factory Mahasiswa.fromJson(Map<String, dynamic> json) {
+    return Mahasiswa(
+      id: json['id'] ?? 0,
+      googleId: json['google_id'],
+      email: json['email'] ?? '',
+      name: json['name'] ?? '',
+      nim: json['nim'],
+      prodi: json['prodi'],
+      rfidUid: json['rfid_uid'],
+      totalPoin: json['total_poin'] ?? 0,
+      levelId: json['level_id'],
+      level: json['level'] != null ? Level.fromJson(json['level']) : null,
+      avatar: json['avatar'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'nim': nim,
+      'prodi': prodi,
+    };
+  }
+}
+ 
+========== FILE: lib\models\api_response.dart ========== 
+class ApiResponse {
+  final bool success;
+  final String message;
+  final dynamic data;
+
+  ApiResponse({
+    required this.success,
+    required this.message,
+    this.data,
+  });
+
+  factory ApiResponse.fromJson(Map<String, dynamic> json) {
+    return ApiResponse(
+      success: json['success'] ?? false,
+      message: json['message'] ?? '',
+      data: json['data'],
+    );
+  }
+}
+ 
+========== FILE: lib\services\storage_service.dart ========== 
+import 'package:shared_preferences/shared_preferences.dart';
+
+class StorageService {
+  static const String _tokenKey = 'auth_token';
+  static const String _userIdKey = 'user_id';
+
+  static Future<void> saveToken(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_tokenKey, token);
+  }
+
+  static Future<String?> getToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_tokenKey);
+  }
+
+  static Future<void> saveUserId(int id) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_userIdKey, id);
+  }
+
+  static Future<int?> getUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt(_userIdKey);
+  }
+
+  static Future<void> clearAll() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+  }
+
+  static Future<bool> hasToken() async {
+    final token = await getToken();
+    return token != null && token.isNotEmpty;
+  }
+}
+ 
+========== FILE: lib\services\api_service.dart ========== 
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import '../config/api_config.dart';
+import '../models/api_response.dart';
+import 'storage_service.dart';
+
+class ApiService {
+  // =====================
+  // HELPER METHODS
+  // =====================
+
+  static Future<Map<String, String>> _getHeaders() async {
+    final token = await StorageService.getToken();
+    return ApiConfig.headers(token: token);
+  }
+
+  static ApiResponse _handleResponse(http.Response response) {
+    final body = jsonDecode(response.body);
+
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return ApiResponse.fromJson(body);
+    } else if (response.statusCode == 401) {
+      // Token expired / unauthorized
+      StorageService.clearAll();
+      return ApiResponse(
+        success: false,
+        message: body['message'] ?? 'Sesi telah berakhir. Silakan login kembali.',
+      );
+    } else if (response.statusCode == 422) {
+      // Validation error
+      final errors = body['errors'] as Map<String, dynamic>?;
+      String errorMsg = body['message'] ?? 'Validasi gagal';
+      if (errors != null && errors.isNotEmpty) {
+        errorMsg = errors.values.first is List
+            ? (errors.values.first as List).first.toString()
+            : errors.values.first.toString();
+      }
+      return ApiResponse(success: false, message: errorMsg);
+    } else {
+      return ApiResponse(
+        success: false,
+        message: body['message'] ?? 'Terjadi kesalahan server.',
+      );
+    }
+  }
+
+  // =====================
+  // AUTH ENDPOINTS
+  // =====================
+
+  static Future<ApiResponse> loginGoogle(String idToken) async {
+    final response = await http.post(
+      Uri.parse('${ApiConfig.baseUrl}/auth/google'),
+      headers: ApiConfig.headers(),
+      body: jsonEncode({'id_token': idToken}),
+    );
+    return _handleResponse(response);
+  }
+
+    // TEMPORARY: Mock login untuk testing (HAPUS sebelum production)
+  static Future<ApiResponse> mockLogin() async {
+    final response = await http.post(
+      Uri.parse('${ApiConfig.baseUrl}/auth/mock-login'),
+      headers: ApiConfig.headers(),
+    );
+    return _handleResponse(response);
+  }
+
+  static Future<ApiResponse> logout() async {
+    final headers = await _getHeaders();
+    final response = await http.post(
+      Uri.parse('${ApiConfig.baseUrl}/auth/logout'),
+      headers: headers,
+    );
+    return _handleResponse(response);
+  }
+
+  // =====================
+  // DASHBOARD
+  // =====================
+
+  static Future<ApiResponse> getDashboard() async {
+    final headers = await _getHeaders();
+    final response = await http.get(
+      Uri.parse('${ApiConfig.baseUrl}/dashboard'),
+      headers: headers,
+    );
+    return _handleResponse(response);
+  }
+
+  // =====================
+  // TRANSAKSI
+  // =====================
+
+  static Future<ApiResponse> getTransaksi({String? period, int page = 1}) async {
+    final headers = await _getHeaders();
+    final params = <String, String>{'page': page.toString()};
+    if (period != null) params['period'] = period;
+
+    final uri = Uri.parse('${ApiConfig.baseUrl}/transaksi')
+        .replace(queryParameters: params);
+    final response = await http.get(uri, headers: headers);
+    return _handleResponse(response);
+  }
+
+  static Future<ApiResponse> getTransaksiDetail(int id) async {
+    final headers = await _getHeaders();
+    final response = await http.get(
+      Uri.parse('${ApiConfig.baseUrl}/transaksi/$id'),
+      headers: headers,
+    );
+    return _handleResponse(response);
+  }
+
+  // =====================
+  // LEADERBOARD
+  // =====================
+
+  static Future<ApiResponse> getLeaderboard({String period = 'mingguan'}) async {
+    final headers = await _getHeaders();
+    final uri = Uri.parse('${ApiConfig.baseUrl}/leaderboard')
+        .replace(queryParameters: {'period': period});
+    final response = await http.get(uri, headers: headers);
+    return _handleResponse(response);
+  }
+
+  static Future<ApiResponse> getMyRank() async {
+    final headers = await _getHeaders();
+    final response = await http.get(
+      Uri.parse('${ApiConfig.baseUrl}/leaderboard/my-rank'),
+      headers: headers,
+    );
+    return _handleResponse(response);
+  }
+
+  // =====================
+  // ACHIEVEMENT
+  // =====================
+
+  static Future<ApiResponse> getAchievements() async {
+    final headers = await _getHeaders();
+    final response = await http.get(
+      Uri.parse('${ApiConfig.baseUrl}/achievements'),
+      headers: headers,
+    );
+    return _handleResponse(response);
+  }
+
+  static Future<ApiResponse> getMyAchievements() async {
+    final headers = await _getHeaders();
+    final response = await http.get(
+      Uri.parse('${ApiConfig.baseUrl}/achievements/my'),
+      headers: headers,
+    );
+    return _handleResponse(response);
+  }
+
+  // =====================
+  // NOTIFIKASI
+  // =====================
+
+  static Future<ApiResponse> getNotifikasi({int page = 1}) async {
+    final headers = await _getHeaders();
+    final uri = Uri.parse('${ApiConfig.baseUrl}/notifikasi')
+        .replace(queryParameters: {'page': page.toString()});
+    final response = await http.get(uri, headers: headers);
+    return _handleResponse(response);
+  }
+
+  static Future<ApiResponse> markNotifikasiRead(int id) async {
+    final headers = await _getHeaders();
+    final response = await http.put(
+      Uri.parse('${ApiConfig.baseUrl}/notifikasi/$id/read'),
+      headers: headers,
+    );
+    return _handleResponse(response);
+  }
+
+  static Future<ApiResponse> markAllNotifikasiRead() async {
+    final headers = await _getHeaders();
+    final response = await http.put(
+      Uri.parse('${ApiConfig.baseUrl}/notifikasi/read-all'),
+      headers: headers,
+    );
+    return _handleResponse(response);
+  }
+
+  static Future<ApiResponse> getUnreadCount() async {
+    final headers = await _getHeaders();
+    final response = await http.get(
+      Uri.parse('${ApiConfig.baseUrl}/notifikasi/unread-count'),
+      headers: headers,
+    );
+    return _handleResponse(response);
+  }
+
+  // =====================
+  // PROFILE
+  // =====================
+
+  static Future<ApiResponse> getProfile() async {
+    final headers = await _getHeaders();
+    final response = await http.get(
+      Uri.parse('${ApiConfig.baseUrl}/profile'),
+      headers: headers,
+    );
+    return _handleResponse(response);
+  }
+
+  static Future<ApiResponse> updateProfile(Map<String, dynamic> data) async {
+    final headers = await _getHeaders();
+    final response = await http.put(
+      Uri.parse('${ApiConfig.baseUrl}/profile'),
+      headers: headers,
+      body: jsonEncode(data),
+    );
+    return _handleResponse(response);
+  }
+
+  static Future<ApiResponse> updateRfid(String rfidUid) async {
+    final headers = await _getHeaders();
+    final response = await http.post(
+      Uri.parse('${ApiConfig.baseUrl}/profile/rfid'),
+      headers: headers,
+      body: jsonEncode({'rfid_uid': rfidUid}),
+    );
+    return _handleResponse(response);
+  }
+
+  static Future<ApiResponse> updateFcmToken(String fcmToken) async {
+    final headers = await _getHeaders();
+    final response = await http.post(
+      Uri.parse('${ApiConfig.baseUrl}/profile/fcm-token'),
+      headers: headers,
+      body: jsonEncode({'fcm_token': fcmToken}),
+    );
+    return _handleResponse(response);
+  }
+}
+ 
+========== FLUTTER CONFIG ========== 
+ 
+========== FILE: android\app\src\main\AndroidManifest.xml ========== 
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <application
+        android:label="Smart Trash"
+        android:name="${applicationName}"
+        android:icon="@mipmap/ic_launcher"
+        android:usesCleartextTraffic="true">
+        <!-- ... activity dst tetap biarkan ... -->
+    </application>
+</manifest>
+ 
+========== FLUTTER MODELS/STORAGE ========== 
+ 
+========== FILE: lib\models\mahasiswa.dart ========== 
+import 'level.dart';
+
+class Mahasiswa {
+  final int id;
+  final String? googleId;
+  final String email;
+  final String name;
+  final String? nim;
+  final String? prodi;
+  final String? rfidUid;
+  final int totalPoin;
+  final int? levelId;
+  final Level? level;
+  final String? avatar;
+
+  Mahasiswa({
+    required this.id,
+    this.googleId,
+    required this.email,
+    required this.name,
+    this.nim,
+    this.prodi,
+    this.rfidUid,
+    required this.totalPoin,
+    this.levelId,
+    this.level,
+    this.avatar,
+  });
+
+  factory Mahasiswa.fromJson(Map<String, dynamic> json) {
+    return Mahasiswa(
+      id: json['id'] ?? 0,
+      googleId: json['google_id'],
+      email: json['email'] ?? '',
+      name: json['name'] ?? '',
+      nim: json['nim'],
+      prodi: json['prodi'],
+      rfidUid: json['rfid_uid'],
+      totalPoin: json['total_poin'] ?? 0,
+      levelId: json['level_id'],
+      level: json['level'] != null ? Level.fromJson(json['level']) : null,
+      avatar: json['avatar'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'nim': nim,
+      'prodi': prodi,
+    };
+  }
+}
+ 
+========== FILE: lib\models\api_response.dart ========== 
+class ApiResponse {
+  final bool success;
+  final String message;
+  final dynamic data;
+
+  ApiResponse({
+    required this.success,
+    required this.message,
+    this.data,
+  });
+
+  factory ApiResponse.fromJson(Map<String, dynamic> json) {
+    return ApiResponse(
+      success: json['success'] ?? false,
+      message: json['message'] ?? '',
+      data: json['data'],
+    );
+  }
+}
+ 
+========== FILE: lib\services\storage_service.dart ========== 
+import 'package:shared_preferences/shared_preferences.dart';
+
+class StorageService {
+  static const String _tokenKey = 'auth_token';
+  static const String _userIdKey = 'user_id';
+
+  static Future<void> saveToken(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_tokenKey, token);
+  }
+
+  static Future<String?> getToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_tokenKey);
+  }
+
+  static Future<void> saveUserId(int id) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_userIdKey, id);
+  }
+
+  static Future<int?> getUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt(_userIdKey);
+  }
+
+  static Future<void> clearAll() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+  }
+
+  static Future<bool> hasToken() async {
+    final token = await getToken();
+    return token != null && token.isNotEmpty;
+  }
+}
+ 
+========== FILE: android\app\src\debug\AndroidManifest.xml ========== 
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- The INTERNET permission is required for development. Specifically,
+         the Flutter tool needs it to communicate with the running application
+         to allow setting breakpoints, to provide hot reload, etc.
+    -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+</manifest>
+
+ 
+========== FLUTTER MODELS/STORAGE ========== 
+ 
+========== FILE: lib\models\mahasiswa.dart ========== 
+import 'level.dart';
+
+class Mahasiswa {
+  final int id;
+  final String? googleId;
+  final String email;
+  final String name;
+  final String? nim;
+  final String? prodi;
+  final String? rfidUid;
+  final int totalPoin;
+  final int? levelId;
+  final Level? level;
+  final String? avatar;
+
+  Mahasiswa({
+    required this.id,
+    this.googleId,
+    required this.email,
+    required this.name,
+    this.nim,
+    this.prodi,
+    this.rfidUid,
+    required this.totalPoin,
+    this.levelId,
+    this.level,
+    this.avatar,
+  });
+
+  factory Mahasiswa.fromJson(Map<String, dynamic> json) {
+    return Mahasiswa(
+      id: json['id'] ?? 0,
+      googleId: json['google_id'],
+      email: json['email'] ?? '',
+      name: json['name'] ?? '',
+      nim: json['nim'],
+      prodi: json['prodi'],
+      rfidUid: json['rfid_uid'],
+      totalPoin: json['total_poin'] ?? 0,
+      levelId: json['level_id'],
+      level: json['level'] != null ? Level.fromJson(json['level']) : null,
+      avatar: json['avatar'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'nim': nim,
+      'prodi': prodi,
+    };
+  }
+}
+ 
+========== FILE: lib\models\api_response.dart ========== 
+class ApiResponse {
+  final bool success;
+  final String message;
+  final dynamic data;
+
+  ApiResponse({
+    required this.success,
+    required this.message,
+    this.data,
+  });
+
+  factory ApiResponse.fromJson(Map<String, dynamic> json) {
+    return ApiResponse(
+      success: json['success'] ?? false,
+      message: json['message'] ?? '',
+      data: json['data'],
+    );
+  }
+}
+ 
+========== FILE: lib\services\storage_service.dart ========== 
+import 'package:shared_preferences/shared_preferences.dart';
+
+class StorageService {
+  static const String _tokenKey = 'auth_token';
+  static const String _userIdKey = 'user_id';
+
+  static Future<void> saveToken(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_tokenKey, token);
+  }
+
+  static Future<String?> getToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_tokenKey);
+  }
+
+  static Future<void> saveUserId(int id) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_userIdKey, id);
+  }
+
+  static Future<int?> getUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt(_userIdKey);
+  }
+
+  static Future<void> clearAll() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+  }
+
+  static Future<bool> hasToken() async {
+    final token = await getToken();
+    return token != null && token.isNotEmpty;
+  }
+}
+ 
+========== FILE: pubspec.yaml ========== 
+name: smart_trash_app
+description: Sistem Tempat Sampah Pintar - Mobile App Mahasiswa
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.5.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  provider: ^6.1.2
+  http: ^1.2.2
+  google_sign_in: ^6.2.1
+  shared_preferences: ^2.3.2
+  intl: ^0.19.0
+  percent_indicator: ^4.2.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+ 
+========== FLUTTER MODELS/STORAGE ========== 
+ 
+========== FILE: lib\models\mahasiswa.dart ========== 
+import 'level.dart';
+
+class Mahasiswa {
+  final int id;
+  final String? googleId;
+  final String email;
+  final String name;
+  final String? nim;
+  final String? prodi;
+  final String? rfidUid;
+  final int totalPoin;
+  final int? levelId;
+  final Level? level;
+  final String? avatar;
+
+  Mahasiswa({
+    required this.id,
+    this.googleId,
+    required this.email,
+    required this.name,
+    this.nim,
+    this.prodi,
+    this.rfidUid,
+    required this.totalPoin,
+    this.levelId,
+    this.level,
+    this.avatar,
+  });
+
+  factory Mahasiswa.fromJson(Map<String, dynamic> json) {
+    return Mahasiswa(
+      id: json['id'] ?? 0,
+      googleId: json['google_id'],
+      email: json['email'] ?? '',
+      name: json['name'] ?? '',
+      nim: json['nim'],
+      prodi: json['prodi'],
+      rfidUid: json['rfid_uid'],
+      totalPoin: json['total_poin'] ?? 0,
+      levelId: json['level_id'],
+      level: json['level'] != null ? Level.fromJson(json['level']) : null,
+      avatar: json['avatar'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'nim': nim,
+      'prodi': prodi,
+    };
+  }
+}
+ 
+========== FILE: lib\models\api_response.dart ========== 
+class ApiResponse {
+  final bool success;
+  final String message;
+  final dynamic data;
+
+  ApiResponse({
+    required this.success,
+    required this.message,
+    this.data,
+  });
+
+  factory ApiResponse.fromJson(Map<String, dynamic> json) {
+    return ApiResponse(
+      success: json['success'] ?? false,
+      message: json['message'] ?? '',
+      data: json['data'],
+    );
+  }
+}
+ 
+========== FILE: lib\services\storage_service.dart ========== 
+import 'package:shared_preferences/shared_preferences.dart';
+
+class StorageService {
+  static const String _tokenKey = 'auth_token';
+  static const String _userIdKey = 'user_id';
+
+  static Future<void> saveToken(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_tokenKey, token);
+  }
+
+  static Future<String?> getToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_tokenKey);
+  }
+
+  static Future<void> saveUserId(int id) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_userIdKey, id);
+  }
+
+  static Future<int?> getUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt(_userIdKey);
+  }
+
+  static Future<void> clearAll() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+  }
+
+  static Future<bool> hasToken() async {
+    final token = await getToken();
+    return token != null && token.isNotEmpty;
+  }
+}
+ 
+========== FILE: lib\config\api_config.dart ========== 
+class ApiConfig {
+  // ============================================
+  // SESUAIKAN DENGAN ENVIRONMENT KAMU:
+  // Android Emulator  → 10.0.2.2
+  // Physical Device   → IP PC kamu (cek: ipconfig)
+  // Contoh: 192.168.1.100
+  // ============================================
+  static const String baseUrl = 'http://10.0.2.2:8000/api';
+
+  // Google Sign-In Server Client ID (Web type)
+  // Dapatkan dari Google Cloud Console → Credentials → OAuth 2.0
+  static const String googleServerClientId = 'YOUR_WEB_CLIENT_ID_HERE';
+
+  static Map<String, String> headers({String? token}) {
+    final h = <String, String>{
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    };
+    if (token != null) {
+      h['Authorization'] = 'Bearer $token';
+    }
+    return h;
+  }
+}
+ 
+========== FLUTTER CONFIG ========== 
+ 
+========== FILE: android\app\src\main\AndroidManifest.xml ========== 
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <application
+        android:label="Smart Trash"
+        android:name="${applicationName}"
+        android:icon="@mipmap/ic_launcher"
+        android:usesCleartextTraffic="true">
+        <!-- ... activity dst tetap biarkan ... -->
+    </application>
+</manifest>
+ 
+========== FLUTTER MODELS/STORAGE ========== 
+ 
+========== FILE: lib\models\mahasiswa.dart ========== 
+import 'level.dart';
+
+class Mahasiswa {
+  final int id;
+  final String? googleId;
+  final String email;
+  final String name;
+  final String? nim;
+  final String? prodi;
+  final String? rfidUid;
+  final int totalPoin;
+  final int? levelId;
+  final Level? level;
+  final String? avatar;
+
+  Mahasiswa({
+    required this.id,
+    this.googleId,
+    required this.email,
+    required this.name,
+    this.nim,
+    this.prodi,
+    this.rfidUid,
+    required this.totalPoin,
+    this.levelId,
+    this.level,
+    this.avatar,
+  });
+
+  factory Mahasiswa.fromJson(Map<String, dynamic> json) {
+    return Mahasiswa(
+      id: json['id'] ?? 0,
+      googleId: json['google_id'],
+      email: json['email'] ?? '',
+      name: json['name'] ?? '',
+      nim: json['nim'],
+      prodi: json['prodi'],
+      rfidUid: json['rfid_uid'],
+      totalPoin: json['total_poin'] ?? 0,
+      levelId: json['level_id'],
+      level: json['level'] != null ? Level.fromJson(json['level']) : null,
+      avatar: json['avatar'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'nim': nim,
+      'prodi': prodi,
+    };
+  }
+}
+ 
+========== FILE: lib\models\api_response.dart ========== 
+class ApiResponse {
+  final bool success;
+  final String message;
+  final dynamic data;
+
+  ApiResponse({
+    required this.success,
+    required this.message,
+    this.data,
+  });
+
+  factory ApiResponse.fromJson(Map<String, dynamic> json) {
+    return ApiResponse(
+      success: json['success'] ?? false,
+      message: json['message'] ?? '',
+      data: json['data'],
+    );
+  }
+}
+ 
+========== FILE: lib\services\storage_service.dart ========== 
+import 'package:shared_preferences/shared_preferences.dart';
+
+class StorageService {
+  static const String _tokenKey = 'auth_token';
+  static const String _userIdKey = 'user_id';
+
+  static Future<void> saveToken(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_tokenKey, token);
+  }
+
+  static Future<String?> getToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_tokenKey);
+  }
+
+  static Future<void> saveUserId(int id) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_userIdKey, id);
+  }
+
+  static Future<int?> getUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt(_userIdKey);
+  }
+
+  static Future<void> clearAll() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+  }
+
+  static Future<bool> hasToken() async {
+    final token = await getToken();
+    return token != null && token.isNotEmpty;
+  }
+}
+ 
+========== FILE: android\app\src\debug\AndroidManifest.xml ========== 
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- The INTERNET permission is required for development. Specifically,
+         the Flutter tool needs it to communicate with the running application
+         to allow setting breakpoints, to provide hot reload, etc.
+    -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+</manifest>
+
+ 
+========== FLUTTER MODELS/STORAGE ========== 
+ 
+========== FILE: lib\models\mahasiswa.dart ========== 
+import 'level.dart';
+
+class Mahasiswa {
+  final int id;
+  final String? googleId;
+  final String email;
+  final String name;
+  final String? nim;
+  final String? prodi;
+  final String? rfidUid;
+  final int totalPoin;
+  final int? levelId;
+  final Level? level;
+  final String? avatar;
+
+  Mahasiswa({
+    required this.id,
+    this.googleId,
+    required this.email,
+    required this.name,
+    this.nim,
+    this.prodi,
+    this.rfidUid,
+    required this.totalPoin,
+    this.levelId,
+    this.level,
+    this.avatar,
+  });
+
+  factory Mahasiswa.fromJson(Map<String, dynamic> json) {
+    return Mahasiswa(
+      id: json['id'] ?? 0,
+      googleId: json['google_id'],
+      email: json['email'] ?? '',
+      name: json['name'] ?? '',
+      nim: json['nim'],
+      prodi: json['prodi'],
+      rfidUid: json['rfid_uid'],
+      totalPoin: json['total_poin'] ?? 0,
+      levelId: json['level_id'],
+      level: json['level'] != null ? Level.fromJson(json['level']) : null,
+      avatar: json['avatar'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'nim': nim,
+      'prodi': prodi,
+    };
+  }
+}
+ 
+========== FILE: lib\models\api_response.dart ========== 
+class ApiResponse {
+  final bool success;
+  final String message;
+  final dynamic data;
+
+  ApiResponse({
+    required this.success,
+    required this.message,
+    this.data,
+  });
+
+  factory ApiResponse.fromJson(Map<String, dynamic> json) {
+    return ApiResponse(
+      success: json['success'] ?? false,
+      message: json['message'] ?? '',
+      data: json['data'],
+    );
+  }
+}
+ 
+========== FILE: lib\services\storage_service.dart ========== 
+import 'package:shared_preferences/shared_preferences.dart';
+
+class StorageService {
+  static const String _tokenKey = 'auth_token';
+  static const String _userIdKey = 'user_id';
+
+  static Future<void> saveToken(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_tokenKey, token);
+  }
+
+  static Future<String?> getToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_tokenKey);
+  }
+
+  static Future<void> saveUserId(int id) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_userIdKey, id);
+  }
+
+  static Future<int?> getUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt(_userIdKey);
+  }
+
+  static Future<void> clearAll() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+  }
+
+  static Future<bool> hasToken() async {
+    final token = await getToken();
+    return token != null && token.isNotEmpty;
+  }
+}
+ 
+========== FILE: pubspec.yaml ========== 
+name: smart_trash_app
+description: Sistem Tempat Sampah Pintar - Mobile App Mahasiswa
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.5.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  provider: ^6.1.2
+  http: ^1.2.2
+  google_sign_in: ^6.2.1
+  shared_preferences: ^2.3.2
+  intl: ^0.19.0
+  percent_indicator: ^4.2.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+ 
+========== FLUTTER MODELS/STORAGE ========== 
+ 
+========== FILE: lib\models\mahasiswa.dart ========== 
+import 'level.dart';
+
+class Mahasiswa {
+  final int id;
+  final String? googleId;
+  final String email;
+  final String name;
+  final String? nim;
+  final String? prodi;
+  final String? rfidUid;
+  final int totalPoin;
+  final int? levelId;
+  final Level? level;
+  final String? avatar;
+
+  Mahasiswa({
+    required this.id,
+    this.googleId,
+    required this.email,
+    required this.name,
+    this.nim,
+    this.prodi,
+    this.rfidUid,
+    required this.totalPoin,
+    this.levelId,
+    this.level,
+    this.avatar,
+  });
+
+  factory Mahasiswa.fromJson(Map<String, dynamic> json) {
+    return Mahasiswa(
+      id: json['id'] ?? 0,
+      googleId: json['google_id'],
+      email: json['email'] ?? '',
+      name: json['name'] ?? '',
+      nim: json['nim'],
+      prodi: json['prodi'],
+      rfidUid: json['rfid_uid'],
+      totalPoin: json['total_poin'] ?? 0,
+      levelId: json['level_id'],
+      level: json['level'] != null ? Level.fromJson(json['level']) : null,
+      avatar: json['avatar'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'nim': nim,
+      'prodi': prodi,
+    };
+  }
+}
+ 
+========== FILE: lib\models\api_response.dart ========== 
+class ApiResponse {
+  final bool success;
+  final String message;
+  final dynamic data;
+
+  ApiResponse({
+    required this.success,
+    required this.message,
+    this.data,
+  });
+
+  factory ApiResponse.fromJson(Map<String, dynamic> json) {
+    return ApiResponse(
+      success: json['success'] ?? false,
+      message: json['message'] ?? '',
+      data: json['data'],
+    );
+  }
+}
+ 
+========== FILE: lib\services\storage_service.dart ========== 
+import 'package:shared_preferences/shared_preferences.dart';
+
+class StorageService {
+  static const String _tokenKey = 'auth_token';
+  static const String _userIdKey = 'user_id';
+
+  static Future<void> saveToken(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_tokenKey, token);
+  }
+
+  static Future<String?> getToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_tokenKey);
+  }
+
+  static Future<void> saveUserId(int id) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_userIdKey, id);
+  }
+
+  static Future<int?> getUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt(_userIdKey);
+  }
+
+  static Future<void> clearAll() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+  }
+
+  static Future<bool> hasToken() async {
+    final token = await getToken();
+    return token != null && token.isNotEmpty;
+  }
+}
+ 
+========== LARAVEL AUTH API ========== 
+ 
+========== FILE: routes\api.php ========== 
+<?php
+
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\HardwareController;
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\DashboardController;
+use App\Http\Controllers\Api\TransaksiController;
+use App\Http\Controllers\Api\LeaderboardController;
+use App\Http\Controllers\Api\AchievementController;
+use App\Http\Controllers\Api\NotifikasiController;
+use App\Http\Controllers\Api\ProfileController;
+
+/*
+|--------------------------------------------------------------------------
+| API Routes - Hardware IoT
+|--------------------------------------------------------------------------
+*/
+
+Route::prefix('hardware')->middleware('hardware.apikey')->group(function () {
+    Route::post('/verify-rfid', [HardwareController::class, 'verifyRfid']);
+    Route::post('/transaksi', [HardwareController::class, 'storeTransaksi']);
+    Route::get('/jenis-sampah', [HardwareController::class, 'getJenisSampah']);
+    Route::post('/heartbeat', [HardwareController::class, 'heartbeat']);
+});
+
+/*
+|--------------------------------------------------------------------------
+| API Routes - Mobile App (Mahasiswa)
+|--------------------------------------------------------------------------
+*/
+
+// Auth - Public
+Route::post('/auth/google', [AuthController::class, 'loginGoogle']);
+
+// Protected routes (requires Sanctum token)
+Route::middleware('auth:sanctum')->group(function () {
+
+    // Auth
+    Route::post('/auth/logout', [AuthController::class, 'logout']);
+
+    // Dashboard
+    Route::get('/dashboard', [DashboardController::class, 'index']);
+
+    // Profile
+    Route::get('/profile', [ProfileController::class, 'index']);
+    Route::put('/profile', [ProfileController::class, 'update']);
+    Route::post('/profile/rfid', [ProfileController::class, 'updateRfid']);
+    Route::post('/profile/fcm-token', [ProfileController::class, 'updateFcmToken']);
+
+    // Transaksi
+    Route::get('/transaksi', [TransaksiController::class, 'index']);
+    Route::get('/transaksi/{id}', [TransaksiController::class, 'show']);
+
+    // Leaderboard
+    Route::get('/leaderboard', [LeaderboardController::class, 'index']);
+    Route::get('/leaderboard/my-rank', [LeaderboardController::class, 'myRank']);
+
+    // Achievement
+    Route::get('/achievements', [AchievementController::class, 'index']);
+    Route::get('/achievements/my', [AchievementController::class, 'myAchievements']);
+
+    // Notifikasi
+    Route::get('/notifikasi', [NotifikasiController::class, 'index']);
+    Route::put('/notifikasi/{id}/read', [NotifikasiController::class, 'markAsRead']);
+    Route::put('/notifikasi/read-all', [NotifikasiController::class, 'markAllAsRead']);
+    Route::get('/notifikasi/unread-count', [NotifikasiController::class, 'unreadCount']);
+    // ============================================
+
+    
+// TEMPORARY: Mock Login untuk testing Flutter
+// HAPUS ini sebelum production!
+// ============================================
+    Route::post('/auth/mock-login', function () {
+        $mahasiswa = \App\Models\Mahasiswa::first();
+
+        if (!$mahasiswa) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tidak ada data mahasiswa di database'
+            ], 404);
+        }
+
+        $token = $mahasiswa->createToken('mobile-app')->plainTextToken;
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Mock login berhasil',
+            'data' => [
+                'token' => $token,
+                'mahasiswa' => [
+                    'id' => $mahasiswa->id,
+                    'name' => $mahasiswa->name,
+                    'email' => $mahasiswa->email,
+                    'avatar' => $mahasiswa->avatar,
+                    'nim' => $mahasiswa->nim,
+                    'prodi' => $mahasiswa->prodi,
+                    'rfid_uid' => $mahasiswa->rfid_uid,
+                    'total_poin' => $mahasiswa->total_poin,
+                    'level_id' => $mahasiswa->level_id,
+                    'level' => $mahasiswa->level,
+                ]
+            ]
+        ]);
+    });
+});
+ 
+========== LARAVEL CONFIG ========== 
+ 
+========== FILE: .env ========== 
+APP_NAME="Smart Trash System"
+APP_ENV=local
+APP_KEY=base64:vynk2E1vNNUgA15tnv2ji5RJDKeEKTfq9StG2VxYhYA=
+APP_DEBUG=true
+APP_TIMEZONE=Asia/Makassar
+APP_URL=http://localhost:8000
+
+APP_LOCALE=id
+APP_FALLBACK_LOCALE=en
+
+LOG_CHANNEL=stack
+LOG_LEVEL=debug
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=smart_trash_db
+DB_USERNAME=root
+DB_PASSWORD=
+
+SESSION_DRIVER=database
+SESSION_LIFETIME=120
+
+CACHE_STORE=file
+QUEUE_CONNECTION=sync
+
+MAIL_MAILER=log
+
+GOOGLE_CLIENT_ID=your-google-client-id-here.apps.googleusercontent.com
+ 
+========== FILE: app\Http\Controllers\Api\AuthController.php ========== 
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use App\Models\Mahasiswa;
+use App\Models\Level;
+use Illuminate\Support\Facades\Validator;
+use Google\Client as GoogleClient;
+
+class AuthController extends Controller
+{
+    /**
+     * Login with Google ID Token
+     * POST /api/auth/google
+     */
+    public function loginGoogle(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'id_token' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi gagal',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            // Verify Google ID Token
+            $client = new GoogleClient(['client_id' => config('services.google.client_id')]);
+            $payload = $client->verifyIdToken($request->id_token);
+
+            if (!$payload) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Token Google tidak valid'
+                ], 401);
+            }
+
+            // Extract user data from token
+            $googleId = $payload['sub'];
+            $email = $payload['email'];
+            $name = $payload['name'];
+            $avatar = $payload['picture'] ?? null;
+
+            // Find or create mahasiswa
+            $mahasiswa = Mahasiswa::where('google_id', $googleId)->first();
+
+            if (!$mahasiswa) {
+                // Buat mahasiswa baru
+                $mahasiswa = Mahasiswa::create([
+                    'google_id' => $googleId,
+                    'email' => $email,
+                    'name' => $name,
+                    'avatar' => $avatar,
+                    'level_id' => 1, // Default: Eco Starter
+                    'total_poin' => 0,
+                ]);
+            } else {
+                // Update data jika sudah ada
+                $mahasiswa->update([
+                    'email' => $email,
+                    'name' => $name,
+                    'avatar' => $avatar,
+                ]);
+            }
+
+            // Create Sanctum token
+            $token = $mahasiswa->createToken('mobile-app')->plainTextToken;
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Login berhasil',
+                'data' => [
+                    'mahasiswa' => [
+                        'id' => $mahasiswa->id,
+                        'name' => $mahasiswa->name,
+                        'email' => $mahasiswa->email,
+                        'avatar' => $mahasiswa->avatar,
+                        'nim' => $mahasiswa->nim,
+                        'prodi' => $mahasiswa->prodi,
+                        'total_poin' => $mahasiswa->total_poin,
+                        'level' => $mahasiswa->level->nama_level ?? 'Eco Starter',
+                        'rfid_registered' => !empty($mahasiswa->rfid_uid),
+                    ],
+                    'token' => $token,
+                ]
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat verifikasi Google',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Logout - revoke token
+     * POST /api/auth/logout
+     */
+    public function logout(Request $request)
+    {
+        $request->user()->currentAccessToken()->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Logout berhasil'
+        ], 200);
+    }
+}
+ 
+========== LARAVEL CONFIG ========== 
+ 
+========== FILE: .env ========== 
+APP_NAME="Smart Trash System"
+APP_ENV=local
+APP_KEY=base64:vynk2E1vNNUgA15tnv2ji5RJDKeEKTfq9StG2VxYhYA=
+APP_DEBUG=true
+APP_TIMEZONE=Asia/Makassar
+APP_URL=http://localhost:8000
+
+APP_LOCALE=id
+APP_FALLBACK_LOCALE=en
+
+LOG_CHANNEL=stack
+LOG_LEVEL=debug
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=smart_trash_db
+DB_USERNAME=root
+DB_PASSWORD=
+
+SESSION_DRIVER=database
+SESSION_LIFETIME=120
+
+CACHE_STORE=file
+QUEUE_CONNECTION=sync
+
+MAIL_MAILER=log
+
+GOOGLE_CLIENT_ID=your-google-client-id-here.apps.googleusercontent.com

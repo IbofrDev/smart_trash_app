@@ -1,0 +1,339 @@
+========== FLUTTER MODELS ========== 
+ 
+========== FILE: lib\models\achievement.dart ========== 
+class Achievement {
+  final int id;
+  final String nama;
+  final String? deskripsi;
+  final String? icon;
+  final String syaratType;
+  final int syaratValue;
+  final int poinBonus;
+  final bool isUnlocked;
+  final String? unlockedAt;
+
+  Achievement({
+    required this.id,
+    required this.nama,
+    this.deskripsi,
+    this.icon,
+    required this.syaratType,
+    required this.syaratValue,
+    required this.poinBonus,
+    this.isUnlocked = false,
+    this.unlockedAt,
+  });
+
+  factory Achievement.fromJson(Map<String, dynamic> json) {
+    return Achievement(
+      id: json['id'] ?? 0,
+      nama: json['nama'] ?? '',
+      deskripsi: json['deskripsi'],
+      icon: json['icon'],
+      syaratType: json['syarat_type'] ?? '',
+      syaratValue: json['syarat_value'] ?? 0,
+      poinBonus: json['poin_bonus'] ?? 0,
+      isUnlocked: json['is_unlocked'] ?? false,
+      unlockedAt: json['unlocked_at'] ?? json['pivot']?['unlocked_at'],
+    );
+  }
+
+  String get syaratLabel {
+    switch (syaratType) {
+      case 'total_kg':
+        return 'Kumpulkan $syaratValue kg';
+      case 'streak':
+        return 'Streak $syaratValue hari';
+      case 'transaksi_count':
+        return '$syaratValue transaksi';
+      case 'first_time':
+        return 'Transaksi pertama';
+      default:
+        return syaratType;
+    }
+  }
+}
+ 
+========== FILE: lib\models\jenis_sampah.dart ========== 
+class JenisSampah {
+  final int id;
+  final String nama;
+  final String? deskripsi;
+  final int poinPerKg;
+  final String satuan;
+
+  JenisSampah({
+    required this.id,
+    required this.nama,
+    this.deskripsi,
+    required this.poinPerKg,
+    required this.satuan,
+  });
+
+  factory JenisSampah.fromJson(Map<String, dynamic> json) {
+    return JenisSampah(
+      id: json['id'] ?? 0,
+      nama: json['nama'] ?? '',
+      deskripsi: json['deskripsi'],
+      poinPerKg: json['poin_per_kg'] ?? 0,
+      satuan: json['satuan'] ?? 'kg',
+    );
+  }
+}
+ 
+========== FILE: lib\models\level.dart ========== 
+class Level {
+  final int id;
+  final String namaLevel;
+  final int minPoin;
+  final int maxPoin;
+  final int urutan;
+
+  Level({
+    required this.id,
+    required this.namaLevel,
+    required this.minPoin,
+    required this.maxPoin,
+    required this.urutan,
+  });
+
+  factory Level.fromJson(Map<String, dynamic> json) {
+    return Level(
+      id: json['id'] ?? 0,
+      namaLevel: json['nama_level'] ?? '',
+      minPoin: json['min_poin'] ?? 0,
+      maxPoin: json['max_poin'] ?? 0,
+      urutan: json['urutan'] ?? 0,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'nama_level': namaLevel,
+      'min_poin': minPoin,
+      'max_poin': maxPoin,
+      'urutan': urutan,
+    };
+  }
+}
+ 
+========== FILE: lib\models\notifikasi.dart ========== 
+class Notifikasi {
+  final int id;
+  final String judul;
+  final String pesan;
+  final String tipe;
+  final bool isRead;
+  final String? createdAt;
+
+  Notifikasi({
+    required this.id,
+    required this.judul,
+    required this.pesan,
+    required this.tipe,
+    required this.isRead,
+    this.createdAt,
+  });
+
+  factory Notifikasi.fromJson(Map<String, dynamic> json) {
+    return Notifikasi(
+      id: json['id'] ?? 0,
+      judul: json['judul'] ?? '',
+      pesan: json['pesan'] ?? '',
+      tipe: json['tipe'] ?? '',
+      isRead: json['is_read'] == 1 || json['is_read'] == true,
+      createdAt: json['created_at'],
+    );
+  }
+
+  String get tipeLabel {
+    switch (tipe) {
+      case 'level_up':
+        return '🎉 Level Up';
+      case 'achievement':
+        return '🏆 Achievement';
+      case 'transaksi':
+        return '♻️ Transaksi';
+      case 'info':
+        return 'ℹ️ Info';
+      default:
+        return tipe;
+    }
+  }
+}
+ 
+========== LARAVEL CONTROLLERS ========== 
+ 
+========== FILE: app\Http\Controllers\Api\AchievementController.php ========== 
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use App\Models\Achievement;
+
+class AchievementController extends Controller
+{
+    /**
+     * Get All Achievements + Status Unlock
+     * GET /api/achievements
+     */
+    public function index(Request $request)
+    {
+        $mahasiswa = $request->user();
+
+        $unlockedIds = $mahasiswa->achievements()->pluck('achievement.id')->toArray();
+
+        $achievements = Achievement::all()->map(function ($achievement) use ($unlockedIds) {
+            return [
+                'id' => $achievement->id,
+                'nama' => $achievement->nama,
+                'deskripsi' => $achievement->deskripsi,
+                'icon' => $achievement->icon,
+                'syarat_type' => $achievement->syarat_type,
+                'syarat_value' => $achievement->syarat_value,
+                'poin_bonus' => $achievement->poin_bonus,
+                'is_unlocked' => in_array($achievement->id, $unlockedIds),
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => $achievements
+        ], 200);
+    }
+
+    /**
+     * Get My Unlocked Achievements
+     * GET /api/achievements/my
+     */
+    public function myAchievements(Request $request)
+    {
+        $mahasiswa = $request->user();
+
+        $achievements = $mahasiswa->achievements()
+            ->orderBy('mahasiswa_achievement.unlocked_at', 'desc')
+            ->get()
+            ->map(function ($achievement) {
+                return [
+                    'id' => $achievement->id,
+                    'nama' => $achievement->nama,
+                    'deskripsi' => $achievement->deskripsi,
+                    'icon' => $achievement->icon,
+                    'poin_bonus' => $achievement->poin_bonus,
+                    'unlocked_at' => $achievement->pivot->unlocked_at,
+                ];
+            });
+
+        return response()->json([
+            'success' => true,
+            'data' => $achievements
+        ], 200);
+    }
+} 
+========== FILE: app\Http\Controllers\Api\NotifikasiController.php ========== 
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use App\Models\Notifikasi;
+
+class NotifikasiController extends Controller
+{
+    /**
+     * Get List Notifikasi (paginated)
+     * GET /api/notifikasi
+     */
+    public function index(Request $request)
+    {
+        $mahasiswa = $request->user();
+
+        $notifikasi = Notifikasi::where('mahasiswa_id', $mahasiswa->id)
+            ->orderBy('created_at', 'desc')
+            ->paginate(20)
+            ->through(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'judul' => $item->judul,
+                    'pesan' => $item->pesan,
+                    'tipe' => $item->tipe,
+                    'is_read' => (bool) $item->is_read,
+                    'created_at' => $item->created_at,
+                ];
+            });
+
+        return response()->json([
+            'success' => true,
+            'data' => $notifikasi
+        ], 200);
+    }
+
+    /**
+     * Mark as Read
+     * PUT /api/notifikasi/{id}/read
+     */
+    public function markAsRead(Request $request, $id)
+    {
+        $mahasiswa = $request->user();
+
+        $notifikasi = Notifikasi::where('id', $id)
+            ->where('mahasiswa_id', $mahasiswa->id)
+            ->first();
+
+        if (!$notifikasi) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Notifikasi tidak ditemukan'
+            ], 404);
+        }
+
+        $notifikasi->update(['is_read' => 1]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Notifikasi ditandai sudah dibaca'
+        ], 200);
+    }
+
+    /**
+     * Mark All as Read
+     * PUT /api/notifikasi/read-all
+     */
+    public function markAllAsRead(Request $request)
+    {
+        $mahasiswa = $request->user();
+
+        Notifikasi::where('mahasiswa_id', $mahasiswa->id)
+            ->where('is_read', 0)
+            ->update(['is_read' => 1]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Semua notifikasi ditandai sudah dibaca'
+        ], 200);
+    }
+
+    /**
+     * Get Unread Count
+     * GET /api/notifikasi/unread-count
+     */
+    public function unreadCount(Request $request)
+    {
+        $mahasiswa = $request->user();
+
+        $count = Notifikasi::where('mahasiswa_id', $mahasiswa->id)
+            ->where('is_read', 0)
+            ->count();
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'unread_count' => $count
+            ]
+        ], 200);
+    }
+}
