@@ -75,7 +75,6 @@ class _SessionScreenState extends State<SessionScreen> {
             ),
           ),
           const SizedBox(height: 32),
-
           _buildCounterCard(
             icon: Icons.local_drink,
             color: Colors.blue,
@@ -88,7 +87,6 @@ class _SessionScreenState extends State<SessionScreen> {
             },
           ),
           const SizedBox(height: 16),
-
           _buildCounterCard(
             icon: Icons.takeout_dining,
             color: Colors.orange,
@@ -101,7 +99,6 @@ class _SessionScreenState extends State<SessionScreen> {
             },
           ),
           const SizedBox(height: 24),
-
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -112,7 +109,8 @@ class _SessionScreenState extends State<SessionScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text('Total Item',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                    style:
+                        TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
                 Text('$total pcs',
                     style: const TextStyle(
                         fontSize: 20,
@@ -122,7 +120,6 @@ class _SessionScreenState extends State<SessionScreen> {
             ),
           ),
           const SizedBox(height: 24),
-
           SizedBox(
             width: double.infinity,
             height: 52,
@@ -150,7 +147,6 @@ class _SessionScreenState extends State<SessionScreen> {
               ),
             ),
           ),
-
           if (provider.errorMessage != null) ...[
             const SizedBox(height: 16),
             Container(
@@ -161,13 +157,12 @@ class _SessionScreenState extends State<SessionScreen> {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.error_outline,
-                      color: Colors.red, size: 20),
+                  const Icon(Icons.error_outline, color: Colors.red, size: 20),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(provider.errorMessage!,
-                        style: const TextStyle(
-                            color: Colors.red, fontSize: 13)),
+                        style:
+                            const TextStyle(color: Colors.red, fontSize: 13)),
                   ),
                 ],
               ),
@@ -188,8 +183,7 @@ class _SessionScreenState extends State<SessionScreen> {
     required VoidCallback onDecrement,
   }) {
     return Card(
-      shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(
@@ -212,8 +206,7 @@ class _SessionScreenState extends State<SessionScreen> {
                       style: const TextStyle(
                           fontSize: 16, fontWeight: FontWeight.w600)),
                   Text(sublabel,
-                      style:
-                          TextStyle(fontSize: 12, color: Colors.grey[500])),
+                      style: TextStyle(fontSize: 12, color: Colors.grey[500])),
                 ],
               ),
             ),
@@ -238,8 +231,7 @@ class _SessionScreenState extends State<SessionScreen> {
     );
   }
 
-  Widget _counterButton(
-      IconData icon, VoidCallback onPressed, bool enabled) {
+  Widget _counterButton(IconData icon, VoidCallback onPressed, bool enabled) {
     return GestureDetector(
       onTap: enabled ? onPressed : null,
       child: Container(
@@ -247,9 +239,8 @@ class _SessionScreenState extends State<SessionScreen> {
         height: 36,
         decoration: BoxDecoration(
           // ✅ FIX 2
-          color: enabled
-              ? Colors.green.withValues(alpha: 0.1)
-              : Colors.grey[100],
+          color:
+              enabled ? Colors.green.withValues(alpha: 0.1) : Colors.grey[100],
           borderRadius: BorderRadius.circular(8),
         ),
         child: Icon(icon,
@@ -270,8 +261,7 @@ class _SessionScreenState extends State<SessionScreen> {
     }
   }
 
-  Widget _buildSessionStatus(
-      BuildContext context, SessionProvider provider) {
+  Widget _buildSessionStatus(BuildContext context, SessionProvider provider) {
     final session = provider.session;
     if (session == null) {
       return const Center(child: Text('Session tidak ditemukan'));
@@ -285,8 +275,7 @@ class _SessionScreenState extends State<SessionScreen> {
           const SizedBox(height: 24),
           Text(
             _statusTitle(session.status),
-            style:
-                const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           Text(
@@ -295,31 +284,26 @@ class _SessionScreenState extends State<SessionScreen> {
             style: TextStyle(color: Colors.grey[600], fontSize: 14),
           ),
           const SizedBox(height: 32),
-
           Card(
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
                 children: [
                   _infoRow('Status', session.status.toUpperCase()),
                   const Divider(),
-                  _infoRow(
-                      'Botol Plastik', '${session.jumlahBotol} pcs'),
+                  _infoRow('Botol Plastik', '${session.jumlahBotol} pcs'),
                   const Divider(),
-                  _infoRow('Kaleng Aluminium',
-                      '${session.jumlahKaleng} pcs'),
+                  _infoRow('Kaleng Aluminium', '${session.jumlahKaleng} pcs'),
                   const Divider(),
-                  _infoRow(
-                      'Total',
+                  _infoRow('Total',
                       '${session.jumlahBotol + session.jumlahKaleng} pcs'),
                 ],
               ),
             ),
           ),
           const SizedBox(height: 24),
-
           if (session.isProcessing || session.isPending) ...[
             const CircularProgressIndicator(),
             const SizedBox(height: 16),
@@ -328,7 +312,6 @@ class _SessionScreenState extends State<SessionScreen> {
               style: TextStyle(color: Colors.grey[500]),
             ),
           ],
-
           if (session.isCompleted) ...[
             const SizedBox(height: 16),
             SizedBox(
@@ -344,7 +327,6 @@ class _SessionScreenState extends State<SessionScreen> {
               ),
             ),
           ],
-
           if (session.isExpired) ...[
             const SizedBox(height: 16),
             SizedBox(
@@ -363,7 +345,6 @@ class _SessionScreenState extends State<SessionScreen> {
               ),
             ),
           ],
-
           if (provider.errorMessage != null) ...[
             const SizedBox(height: 16),
             Container(
@@ -395,13 +376,13 @@ class _SessionScreenState extends State<SessionScreen> {
         icon = Icons.contactless;
         color = Colors.teal;
         break;
-      case 'weighing':
-        icon = Icons.scale;
-        color = Colors.orange;
-        break;
       case 'counting':
         icon = Icons.pin;
         color = Colors.purple;
+        break;
+      case 'weighing':
+        icon = Icons.scale;
+        color = Colors.orange;
         break;
       case 'completed':
         icon = Icons.check_circle;
@@ -433,10 +414,10 @@ class _SessionScreenState extends State<SessionScreen> {
         return 'Tap Kartu RFID';
       case 'tapped':
         return 'Kartu Terdeteksi';
-      case 'weighing':
-        return 'Menimbang...';
       case 'counting':
         return 'Menghitung...';
+      case 'weighing':
+        return 'Menimbang...';
       case 'completed':
         return 'Transaksi Selesai! 🎉';
       case 'expired':
@@ -451,11 +432,11 @@ class _SessionScreenState extends State<SessionScreen> {
       case 'pending':
         return 'Tempelkan kartu RFID kamu ke reader pada mesin tempat sampah pintar';
       case 'tapped':
-        return 'Kartu berhasil dibaca. Masukkan sampah ke dalam mesin sekarang.';
-      case 'weighing':
-        return 'Mesin sedang menimbang sampah kamu...';
+        return 'Kartu berhasil dibaca. Masukkan sampah ke dalam corong satu per satu.';
       case 'counting':
-        return 'Mesin sedang menghitung jumlah item...';
+        return 'Mesin sedang menghitung jumlah sampah yang masuk...';
+      case 'weighing':
+        return 'Sampah terhitung. Mesin sedang menimbang berat total...';
       case 'completed':
         return 'Sampah berhasil diproses! Poin dan koin sudah ditambahkan.';
       case 'expired':
@@ -472,8 +453,7 @@ class _SessionScreenState extends State<SessionScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label, style: TextStyle(color: Colors.grey[600])),
-          Text(value,
-              style: const TextStyle(fontWeight: FontWeight.w600)),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
         ],
       ),
     );

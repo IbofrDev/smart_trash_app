@@ -41,7 +41,9 @@ class Mahasiswa {
       totalPoin: json['total_poin'] ?? 0,
       totalKoinBotol: json['total_koin_botol'] ?? 0,
       levelId: json['level_id'],
-      level: json['level'] != null ? Level.fromJson(json['level']) : null,
+      level: json['level'] != null && json['level'] is Map<String, dynamic>
+          ? Level.fromJson(json['level'] as Map<String, dynamic>)
+          : null,
       avatar: json['avatar'],
     );
   }

@@ -115,13 +115,25 @@ class AuthProvider extends ChangeNotifier {
       final response = await ApiService.loginGoogle(idToken);
 
       if (response.success && response.data != null) {
-        final token = response.data['token'] as String;
-        final userData = response.data['mahasiswa'] ?? response.data['user'];
+        // Safety check — pastikan data adalah Map
+        final data = response.data is Map<String, dynamic>
+            ? response.data as Map<String, dynamic>
+            : <String, dynamic>{};
+
+        final token = data['token'] as String? ?? '';
+        final userData = data['mahasiswa'] ?? data['user'];
+
+        if (token.isEmpty || userData == null) {
+          _status = AuthStatus.unauthenticated;
+          _errorMessage = 'Response tidak valid dari server';
+          notifyListeners();
+          return false;
+        }
 
         await StorageService.saveToken(token);
         await StorageService.saveAuthRole('mahasiswa');
 
-        _mahasiswa = Mahasiswa.fromJson(userData);
+        _mahasiswa = Mahasiswa.fromJson(userData as Map<String, dynamic>);
         _kasir = null;
         _currentRole = 'mahasiswa';
 

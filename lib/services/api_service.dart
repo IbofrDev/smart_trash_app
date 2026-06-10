@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../config/api_config.dart';
 import '../models/api_response.dart';
@@ -53,6 +54,11 @@ class ApiService {
       headers: ApiConfig.headers(),
       body: jsonEncode({'id_token': idToken}),
     );
+    // Debug — lihat response asli
+    debugPrint('=== LOGIN GOOGLE RESPONSE ===');
+    debugPrint('Status: ${response.statusCode}');
+    debugPrint('Body: ${response.body}');
+    debugPrint('============================');
     return _handleResponse(response);
   }
 
@@ -102,7 +108,7 @@ class ApiService {
     return _handleResponse(response);
   }
 
-    static Future<ApiResponse> logoutKasir() async {
+  static Future<ApiResponse> logoutKasir() async {
     final headers = await _getHeaders();
     final response = await http.post(
       Uri.parse('${ApiConfig.baseUrl}/kasir/logout'),
@@ -231,7 +237,6 @@ class ApiService {
     );
     return _handleResponse(response);
   }
-
 
   // =====================
   // LEADERBOARD

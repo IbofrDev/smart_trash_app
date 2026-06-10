@@ -1,15 +1,15 @@
 class ApiConfig {
   // ============================================
-  // SESUAIKAN DENGAN ENVIRONMENT KAMU:
-  // Android Emulator  → 10.0.2.2
-  // Physical Device   → IP PC kamu (cek: ipconfig)
-  // Contoh: 192.168.1.100
+  // LIVE HOSTING ENVIRONMENT
   // ============================================
-  static const String baseUrl = 'http://127.0.0.1:8000/api';
+  // Lokal: 'http://10.0.2.2:8000/api'
+// server: 'https://polibansmarttrash.my.id/api';
+  static const String baseUrl = 'http://10.87.90.176:8000/api';
 
   // Google Sign-In Server Client ID (Web type)
   // Dapatkan dari Google Cloud Console → Credentials → OAuth 2.0
-  static const String googleServerClientId = 'YOUR_WEB_CLIENT_ID_HERE';
+  static const String googleServerClientId =
+      '672702737346-l194hjk7nkkg2hahqnn4r3q2sckf4nj5.apps.googleusercontent.com';
 
   static Map<String, String> headers({String? token}) {
     final h = <String, String>{
