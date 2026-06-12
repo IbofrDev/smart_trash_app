@@ -174,8 +174,13 @@ class ApiService {
 
     final uri = Uri.parse('${ApiConfig.baseUrl}/transaksi')
         .replace(queryParameters: params);
-    final response = await http.get(uri, headers: headers);
-    return _handleResponse(response);
+    try {
+      final response = await http.get(uri, headers: headers).timeout(const Duration(seconds: 15));
+      return _handleResponse(response);
+    } catch (e) {
+      debugPrint('Error GetTransaksi: $e');
+      return ApiResponse(success: false, message: 'Koneksi terputus: $e');
+    }
   }
 
   static Future<ApiResponse> getTransaksiDetail(int id) async {
@@ -265,12 +270,17 @@ class ApiService {
   // =====================
 
   static Future<ApiResponse> getAchievements() async {
-    final headers = await _getHeaders();
-    final response = await http.get(
-      Uri.parse('${ApiConfig.baseUrl}/achievements'),
-      headers: headers,
-    );
-    return _handleResponse(response);
+    try {
+      final headers = await _getHeaders();
+      final response = await http.get(
+        Uri.parse('${ApiConfig.baseUrl}/achievements'),
+        headers: headers,
+      ).timeout(const Duration(seconds: 15));
+      return _handleResponse(response);
+    } catch (e) {
+      debugPrint('Error GetAchievements: $e');
+      return ApiResponse(success: false, message: 'Gagal memuat achievement: $e');
+    }
   }
 
   static Future<ApiResponse> getMyAchievements() async {

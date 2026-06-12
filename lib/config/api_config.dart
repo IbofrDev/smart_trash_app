@@ -4,7 +4,7 @@ class ApiConfig {
   // ============================================
   // Lokal: 'http://10.0.2.2:8000/api'
 // server: 'https://polibansmarttrash.my.id/api';
-  static const String baseUrl = 'http://10.87.90.176:8000/api';
+  static const String baseUrl = 'https://polibansmarttrash.my.id/api';
 
   // Google Sign-In Server Client ID (Web type)
   // Dapatkan dari Google Cloud Console → Credentials → OAuth 2.0
