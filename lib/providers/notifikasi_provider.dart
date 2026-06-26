@@ -79,14 +79,7 @@ class NotifikasiProvider extends ChangeNotifier {
       if (response.success) {
         final index = _notifikasis.indexWhere((n) => n.id == id);
         if (index != -1) {
-          _notifikasis[index] = Notifikasi(
-            id: _notifikasis[index].id,
-            judul: _notifikasis[index].judul,
-            pesan: _notifikasis[index].pesan,
-            tipe: _notifikasis[index].tipe,
-            isRead: true,
-            createdAt: _notifikasis[index].createdAt,
-          );
+          _notifikasis[index] = _notifikasis[index].copyWith(isRead: true);
           _unreadCount = (_unreadCount - 1).clamp(0, 999);
           notifyListeners();
         }
@@ -98,16 +91,8 @@ class NotifikasiProvider extends ChangeNotifier {
     try {
       final response = await ApiService.markAllNotifikasiRead();
       if (response.success) {
-        _notifikasis = _notifikasis
-            .map((n) => Notifikasi(
-                  id: n.id,
-                  judul: n.judul,
-                  pesan: n.pesan,
-                  tipe: n.tipe,
-                  isRead: true,
-                  createdAt: n.createdAt,
-                ))
-            .toList();
+        _notifikasis =
+            _notifikasis.map((n) => n.copyWith(isRead: true)).toList();
         _unreadCount = 0;
         notifyListeners();
       }

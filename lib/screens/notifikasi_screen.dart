@@ -33,9 +33,11 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
   }
 
   void _onScroll() {
+    final provider = context.read<NotifikasiProvider>();
+    if (provider.isLoading || !provider.hasMore) return;
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 200) {
-      context.read<NotifikasiProvider>().loadNotifikasi();
+      provider.loadNotifikasi();
     }
   }
 

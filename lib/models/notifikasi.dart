@@ -15,6 +15,24 @@ class Notifikasi {
     this.createdAt,
   });
 
+  Notifikasi copyWith({
+    int? id,
+    String? judul,
+    String? pesan,
+    String? tipe,
+    bool? isRead,
+    String? createdAt,
+  }) {
+    return Notifikasi(
+      id: id ?? this.id,
+      judul: judul ?? this.judul,
+      pesan: pesan ?? this.pesan,
+      tipe: tipe ?? this.tipe,
+      isRead: isRead ?? this.isRead,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
   factory Notifikasi.fromJson(Map<String, dynamic> json) {
     return Notifikasi(
       id: json['id'] ?? 0,
