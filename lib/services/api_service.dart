@@ -49,11 +49,13 @@ class ApiService {
   // =====================
 
   static Future<ApiResponse> loginGoogle(String idToken) async {
-    final response = await http.post(
-      Uri.parse('${ApiConfig.baseUrl}/auth/google'),
-      headers: ApiConfig.headers(),
-      body: jsonEncode({'id_token': idToken}),
-    );
+    final response = await http
+        .post(
+          Uri.parse('${ApiConfig.baseUrl}/auth/google'),
+          headers: ApiConfig.headers(),
+          body: jsonEncode({'id_token': idToken}),
+        )
+        .timeout(const Duration(seconds: 15));
     // Debug — lihat response asli
     debugPrint('=== LOGIN GOOGLE RESPONSE ===');
     debugPrint('Status: ${response.statusCode}');
@@ -63,14 +65,16 @@ class ApiService {
   }
 
   static Future<ApiResponse> loginKasir(String email, String password) async {
-    final response = await http.post(
-      Uri.parse('${ApiConfig.baseUrl}/auth/kasir/login'),
-      headers: ApiConfig.headers(),
-      body: jsonEncode({
-        'email': email,
-        'password': password,
-      }),
-    );
+    final response = await http
+        .post(
+          Uri.parse('${ApiConfig.baseUrl}/auth/kasir/login'),
+          headers: ApiConfig.headers(),
+          body: jsonEncode({
+            'email': email,
+            'password': password,
+          }),
+        )
+        .timeout(const Duration(seconds: 15));
     return _handleResponse(response);
   }
 
@@ -101,51 +105,61 @@ class ApiService {
 
   static Future<ApiResponse> logout() async {
     final headers = await _getHeaders();
-    final response = await http.post(
-      Uri.parse('${ApiConfig.baseUrl}/auth/logout'),
-      headers: headers,
-    );
+    final response = await http
+        .post(
+          Uri.parse('${ApiConfig.baseUrl}/auth/logout'),
+          headers: headers,
+        )
+        .timeout(const Duration(seconds: 10));
     return _handleResponse(response);
   }
 
   static Future<ApiResponse> logoutKasir() async {
     final headers = await _getHeaders();
-    final response = await http.post(
-      Uri.parse('${ApiConfig.baseUrl}/kasir/logout'),
-      headers: headers,
-    );
+    final response = await http
+        .post(
+          Uri.parse('${ApiConfig.baseUrl}/kasir/logout'),
+          headers: headers,
+        )
+        .timeout(const Duration(seconds: 10));
     return _handleResponse(response);
   }
 
   static Future<ApiResponse> getKasirMe() async {
     final headers = await _getHeaders();
-    final response = await http.get(
-      Uri.parse('${ApiConfig.baseUrl}/kasir/me'),
-      headers: headers,
-    );
+    final response = await http
+        .get(
+          Uri.parse('${ApiConfig.baseUrl}/kasir/me'),
+          headers: headers,
+        )
+        .timeout(const Duration(seconds: 15));
     return _handleResponse(response);
   }
 
   static Future<ApiResponse> checkKasirVoucher(String kode) async {
     final headers = await _getHeaders();
-    final response = await http.get(
-      Uri.parse(
-        '${ApiConfig.baseUrl}/kasir/voucher/check/${Uri.encodeComponent(kode)}',
-      ),
-      headers: headers,
-    );
+    final response = await http
+        .get(
+          Uri.parse(
+            '${ApiConfig.baseUrl}/kasir/voucher/check/${Uri.encodeComponent(kode)}',
+          ),
+          headers: headers,
+        )
+        .timeout(const Duration(seconds: 15));
     return _handleResponse(response);
   }
 
   static Future<ApiResponse> validateKasirVoucher(String kodeVoucher) async {
     final headers = await _getHeaders();
-    final response = await http.post(
-      Uri.parse('${ApiConfig.baseUrl}/kasir/voucher/validate'),
-      headers: headers,
-      body: jsonEncode({
-        'kode_voucher': kodeVoucher,
-      }),
-    );
+    final response = await http
+        .post(
+          Uri.parse('${ApiConfig.baseUrl}/kasir/voucher/validate'),
+          headers: headers,
+          body: jsonEncode({
+            'kode_voucher': kodeVoucher,
+          }),
+        )
+        .timeout(const Duration(seconds: 15));
     return _handleResponse(response);
   }
 
@@ -155,11 +169,18 @@ class ApiService {
 
   static Future<ApiResponse> getDashboard() async {
     final headers = await _getHeaders();
-    final response = await http.get(
-      Uri.parse('${ApiConfig.baseUrl}/dashboard'),
-      headers: headers,
-    );
-    return _handleResponse(response);
+    try {
+      final response = await http
+          .get(
+            Uri.parse('${ApiConfig.baseUrl}/dashboard'),
+            headers: headers,
+          )
+          .timeout(const Duration(seconds: 15));
+      return _handleResponse(response);
+    } catch (e) {
+      debugPrint('Error getDashboard: $e');
+      return ApiResponse(success: false, message: 'Koneksi terputus: $e');
+    }
   }
 
   // =====================
@@ -175,7 +196,9 @@ class ApiService {
     final uri = Uri.parse('${ApiConfig.baseUrl}/transaksi')
         .replace(queryParameters: params);
     try {
-      final response = await http.get(uri, headers: headers).timeout(const Duration(seconds: 15));
+      final response = await http
+          .get(uri, headers: headers)
+          .timeout(const Duration(seconds: 15));
       return _handleResponse(response);
     } catch (e) {
       debugPrint('Error GetTransaksi: $e');
@@ -185,40 +208,76 @@ class ApiService {
 
   static Future<ApiResponse> getTransaksiDetail(int id) async {
     final headers = await _getHeaders();
-    final response = await http.get(
-      Uri.parse('${ApiConfig.baseUrl}/transaksi/$id'),
-      headers: headers,
-    );
-    return _handleResponse(response);
+    try {
+      final response = await http
+          .get(
+            Uri.parse('${ApiConfig.baseUrl}/transaksi/$id'),
+            headers: headers,
+          )
+          .timeout(const Duration(seconds: 15));
+      return _handleResponse(response);
+    } catch (e) {
+      debugPrint('Error getTransaksiDetail: $e');
+      return ApiResponse(success: false, message: 'Koneksi terputus: $e');
+    }
   }
 
   // =====================
   // TRANSAKSI SESSION
   // =====================
-
   static Future<ApiResponse> createSession({
     required int jumlahBotol,
     required int jumlahKaleng,
   }) async {
     final headers = await _getHeaders();
-    final response = await http.post(
-      Uri.parse('${ApiConfig.baseUrl}/transaksi/session'),
-      headers: headers,
-      body: jsonEncode({
-        'jumlah_botol': jumlahBotol,
-        'jumlah_kaleng': jumlahKaleng,
-      }),
-    );
-    return _handleResponse(response);
+    try {
+      final response = await http
+          .post(
+            Uri.parse('${ApiConfig.baseUrl}/transaksi/session'),
+            headers: headers,
+            body: jsonEncode({
+              'jumlah_botol': jumlahBotol,
+              'jumlah_kaleng': jumlahKaleng,
+            }),
+          )
+          .timeout(const Duration(seconds: 15));
+      return _handleResponse(response);
+    } catch (e) {
+      debugPrint('Error createSession: $e');
+      return ApiResponse(success: false, message: 'Koneksi terputus: $e');
+    }
   }
 
   static Future<ApiResponse> checkSession(String token) async {
     final headers = await _getHeaders();
-    final response = await http.get(
-      Uri.parse('${ApiConfig.baseUrl}/transaksi/session/$token'),
-      headers: headers,
-    );
-    return _handleResponse(response);
+    try {
+      final response = await http
+          .get(
+            Uri.parse('${ApiConfig.baseUrl}/transaksi/session/$token'),
+            headers: headers,
+          )
+          .timeout(const Duration(seconds: 15));
+      return _handleResponse(response);
+    } catch (e) {
+      debugPrint('Error checkSession: $e');
+      return ApiResponse(success: false, message: 'Koneksi terputus: $e');
+    }
+  }
+
+  static Future<ApiResponse> cancelSession(String token) async {
+    final headers = await _getHeaders();
+    try {
+      final response = await http
+          .delete(
+            Uri.parse('${ApiConfig.baseUrl}/transaksi/session/$token'),
+            headers: headers,
+          )
+          .timeout(const Duration(seconds: 15));
+      return _handleResponse(response);
+    } catch (e) {
+      debugPrint('Error cancelSession: $e');
+      return ApiResponse(success: false, message: 'Koneksi terputus: $e');
+    }
   }
 
   // =====================
@@ -227,20 +286,34 @@ class ApiService {
 
   static Future<ApiResponse> getVouchers() async {
     final headers = await _getHeaders();
-    final response = await http.get(
-      Uri.parse('${ApiConfig.baseUrl}/vouchers'),
-      headers: headers,
-    );
-    return _handleResponse(response);
+    try {
+      final response = await http
+          .get(
+            Uri.parse('${ApiConfig.baseUrl}/vouchers'),
+            headers: headers,
+          )
+          .timeout(const Duration(seconds: 15));
+      return _handleResponse(response);
+    } catch (e) {
+      debugPrint('Error getVouchers: $e');
+      return ApiResponse(success: false, message: 'Koneksi terputus: $e');
+    }
   }
 
   static Future<ApiResponse> redeemVoucher() async {
     final headers = await _getHeaders();
-    final response = await http.post(
-      Uri.parse('${ApiConfig.baseUrl}/vouchers/redeem'),
-      headers: headers,
-    );
-    return _handleResponse(response);
+    try {
+      final response = await http
+          .post(
+            Uri.parse('${ApiConfig.baseUrl}/vouchers/redeem'),
+            headers: headers,
+          )
+          .timeout(const Duration(seconds: 15));
+      return _handleResponse(response);
+    } catch (e) {
+      debugPrint('Error redeemVoucher: $e');
+      return ApiResponse(success: false, message: 'Koneksi terputus: $e');
+    }
   }
 
   // =====================
@@ -252,17 +325,31 @@ class ApiService {
     final headers = await _getHeaders();
     final uri = Uri.parse('${ApiConfig.baseUrl}/leaderboard')
         .replace(queryParameters: {'period': period});
-    final response = await http.get(uri, headers: headers);
-    return _handleResponse(response);
+    try {
+      final response = await http
+          .get(uri, headers: headers)
+          .timeout(const Duration(seconds: 15));
+      return _handleResponse(response);
+    } catch (e) {
+      debugPrint('Error getLeaderboard: $e');
+      return ApiResponse(success: false, message: 'Koneksi terputus: $e');
+    }
   }
 
   static Future<ApiResponse> getMyRank() async {
     final headers = await _getHeaders();
-    final response = await http.get(
-      Uri.parse('${ApiConfig.baseUrl}/leaderboard/my-rank'),
-      headers: headers,
-    );
-    return _handleResponse(response);
+    try {
+      final response = await http
+          .get(
+            Uri.parse('${ApiConfig.baseUrl}/leaderboard/my-rank'),
+            headers: headers,
+          )
+          .timeout(const Duration(seconds: 15));
+      return _handleResponse(response);
+    } catch (e) {
+      debugPrint('Error getMyRank: $e');
+      return ApiResponse(success: false, message: 'Koneksi terputus: $e');
+    }
   }
 
   // =====================
@@ -272,24 +359,34 @@ class ApiService {
   static Future<ApiResponse> getAchievements() async {
     try {
       final headers = await _getHeaders();
-      final response = await http.get(
-        Uri.parse('${ApiConfig.baseUrl}/achievements'),
-        headers: headers,
-      ).timeout(const Duration(seconds: 15));
+      final response = await http
+          .get(
+            Uri.parse('${ApiConfig.baseUrl}/achievements'),
+            headers: headers,
+          )
+          .timeout(const Duration(seconds: 15));
       return _handleResponse(response);
     } catch (e) {
       debugPrint('Error GetAchievements: $e');
-      return ApiResponse(success: false, message: 'Gagal memuat achievement: $e');
+      return ApiResponse(
+          success: false, message: 'Gagal memuat achievement: $e');
     }
   }
 
   static Future<ApiResponse> getMyAchievements() async {
     final headers = await _getHeaders();
-    final response = await http.get(
-      Uri.parse('${ApiConfig.baseUrl}/achievements/my'),
-      headers: headers,
-    );
-    return _handleResponse(response);
+    try {
+      final response = await http
+          .get(
+            Uri.parse('${ApiConfig.baseUrl}/achievements/my'),
+            headers: headers,
+          )
+          .timeout(const Duration(seconds: 15));
+      return _handleResponse(response);
+    } catch (e) {
+      debugPrint('Error getMyAchievements: $e');
+      return ApiResponse(success: false, message: 'Koneksi terputus: $e');
+    }
   }
 
   // =====================
@@ -300,35 +397,63 @@ class ApiService {
     final headers = await _getHeaders();
     final uri = Uri.parse('${ApiConfig.baseUrl}/notifikasi')
         .replace(queryParameters: {'page': page.toString()});
-    final response = await http.get(uri, headers: headers);
-    return _handleResponse(response);
+    try {
+      final response = await http
+          .get(uri, headers: headers)
+          .timeout(const Duration(seconds: 15));
+      return _handleResponse(response);
+    } catch (e) {
+      debugPrint('Error getNotifikasi: $e');
+      return ApiResponse(success: false, message: 'Koneksi terputus: $e');
+    }
   }
 
   static Future<ApiResponse> markNotifikasiRead(int id) async {
     final headers = await _getHeaders();
-    final response = await http.put(
-      Uri.parse('${ApiConfig.baseUrl}/notifikasi/$id/read'),
-      headers: headers,
-    );
-    return _handleResponse(response);
+    try {
+      final response = await http
+          .put(
+            Uri.parse('${ApiConfig.baseUrl}/notifikasi/$id/read'),
+            headers: headers,
+          )
+          .timeout(const Duration(seconds: 10));
+      return _handleResponse(response);
+    } catch (e) {
+      debugPrint('Error markNotifikasiRead: $e');
+      return ApiResponse(success: false, message: 'Koneksi terputus: $e');
+    }
   }
 
   static Future<ApiResponse> markAllNotifikasiRead() async {
     final headers = await _getHeaders();
-    final response = await http.put(
-      Uri.parse('${ApiConfig.baseUrl}/notifikasi/read-all'),
-      headers: headers,
-    );
-    return _handleResponse(response);
+    try {
+      final response = await http
+          .put(
+            Uri.parse('${ApiConfig.baseUrl}/notifikasi/read-all'),
+            headers: headers,
+          )
+          .timeout(const Duration(seconds: 10));
+      return _handleResponse(response);
+    } catch (e) {
+      debugPrint('Error markAllNotifikasiRead: $e');
+      return ApiResponse(success: false, message: 'Koneksi terputus: $e');
+    }
   }
 
   static Future<ApiResponse> getUnreadCount() async {
     final headers = await _getHeaders();
-    final response = await http.get(
-      Uri.parse('${ApiConfig.baseUrl}/notifikasi/unread-count'),
-      headers: headers,
-    );
-    return _handleResponse(response);
+    try {
+      final response = await http
+          .get(
+            Uri.parse('${ApiConfig.baseUrl}/notifikasi/unread-count'),
+            headers: headers,
+          )
+          .timeout(const Duration(seconds: 10));
+      return _handleResponse(response);
+    } catch (e) {
+      debugPrint('Error getUnreadCount: $e');
+      return ApiResponse(success: false, message: 'Koneksi terputus: $e');
+    }
   }
 
   // =====================
@@ -337,40 +462,68 @@ class ApiService {
 
   static Future<ApiResponse> getProfile() async {
     final headers = await _getHeaders();
-    final response = await http.get(
-      Uri.parse('${ApiConfig.baseUrl}/profile'),
-      headers: headers,
-    );
-    return _handleResponse(response);
+    try {
+      final response = await http
+          .get(
+            Uri.parse('${ApiConfig.baseUrl}/profile'),
+            headers: headers,
+          )
+          .timeout(const Duration(seconds: 15));
+      return _handleResponse(response);
+    } catch (e) {
+      debugPrint('Error getProfile: $e');
+      return ApiResponse(success: false, message: 'Koneksi terputus: $e');
+    }
   }
 
   static Future<ApiResponse> updateProfile(Map<String, dynamic> data) async {
     final headers = await _getHeaders();
-    final response = await http.put(
-      Uri.parse('${ApiConfig.baseUrl}/profile'),
-      headers: headers,
-      body: jsonEncode(data),
-    );
-    return _handleResponse(response);
+    try {
+      final response = await http
+          .put(
+            Uri.parse('${ApiConfig.baseUrl}/profile'),
+            headers: headers,
+            body: jsonEncode(data),
+          )
+          .timeout(const Duration(seconds: 15));
+      return _handleResponse(response);
+    } catch (e) {
+      debugPrint('Error updateProfile: $e');
+      return ApiResponse(success: false, message: 'Koneksi terputus: $e');
+    }
   }
 
   static Future<ApiResponse> updateRfid(String rfidUid) async {
     final headers = await _getHeaders();
-    final response = await http.post(
-      Uri.parse('${ApiConfig.baseUrl}/profile/rfid'),
-      headers: headers,
-      body: jsonEncode({'rfid_uid': rfidUid}),
-    );
-    return _handleResponse(response);
+    try {
+      final response = await http
+          .post(
+            Uri.parse('${ApiConfig.baseUrl}/profile/rfid'),
+            headers: headers,
+            body: jsonEncode({'rfid_uid': rfidUid}),
+          )
+          .timeout(const Duration(seconds: 15));
+      return _handleResponse(response);
+    } catch (e) {
+      debugPrint('Error updateRfid: $e');
+      return ApiResponse(success: false, message: 'Koneksi terputus: $e');
+    }
   }
 
   static Future<ApiResponse> updateFcmToken(String fcmToken) async {
     final headers = await _getHeaders();
-    final response = await http.post(
-      Uri.parse('${ApiConfig.baseUrl}/profile/fcm-token'),
-      headers: headers,
-      body: jsonEncode({'fcm_token': fcmToken}),
-    );
-    return _handleResponse(response);
+    try {
+      final response = await http
+          .post(
+            Uri.parse('${ApiConfig.baseUrl}/profile/fcm-token'),
+            headers: headers,
+            body: jsonEncode({'fcm_token': fcmToken}),
+          )
+          .timeout(const Duration(seconds: 10));
+      return _handleResponse(response);
+    } catch (e) {
+      debugPrint('Error updateFcmToken: $e');
+      return ApiResponse(success: false, message: 'Koneksi terputus: $e');
+    }
   }
 }

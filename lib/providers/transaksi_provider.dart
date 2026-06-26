@@ -66,7 +66,9 @@ class TransaksiProvider extends ChangeNotifier {
         // Hitung summary dari semua data yang sudah di-load
         _totalPoin = _transaksis.fold(0, (sum, t) => sum + t.poinDidapat);
         _totalKoin = _transaksis.fold(0, (sum, t) => sum + t.koinDidapat);
-        _totalTransaksi = _transaksis.length;
+
+        // Pakai total dari API bukan dari jumlah yang sudah di-load
+        _totalTransaksi = response.data['total'] ?? _transaksis.length;
 
         // Check pagination
         final lastPage = response.data['last_page'] ?? 1;

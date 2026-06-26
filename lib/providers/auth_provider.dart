@@ -39,22 +39,15 @@ class AuthProvider extends ChangeNotifier {
       final savedRole = await StorageService.getAuthRole();
       bool isValid = false;
 
-      if (savedRole == 'mahasiswa') {
-        isValid = await _validateMahasiswaToken();
-        if (!isValid) {
-          isValid = await _validateKasirToken();
-        }
-      } else if (savedRole == 'kasir') {
+      if (savedRole == 'kasir') {
         isValid = await _validateKasirToken();
-        if (!isValid) {
-          isValid = await _validateMahasiswaToken();
-        }
       } else {
+        // Default ke mahasiswa (termasuk null/unknown role)
         isValid = await _validateMahasiswaToken();
-        if (!isValid) {
-          isValid = await _validateKasirToken();
-        }
       }
+
+      // Kalau gagal, clear token langsung
+      // Tidak perlu coba role lain karena token sudah tersimpan per role
 
       if (!isValid) {
         await StorageService.clearAll();
@@ -168,13 +161,25 @@ class AuthProvider extends ChangeNotifier {
       final response = await ApiService.loginKasir(email.trim(), password);
 
       if (response.success && response.data != null) {
-        final token = response.data['token'] as String;
-        final kasirData = response.data['kasir'] ?? response.data['user'];
+        // Safety check - pastikan data adalah Map
+        final data = response.data is Map<String, dynamic>
+            ? response.data as Map<String, dynamic>
+            : <String, dynamic>{};
+
+        final token = data['token'] as String? ?? '';
+        final kasirData = data['kasir'] ?? data['user'];
+
+        if (token.isEmpty || kasirData == null) {
+          _status = AuthStatus.unauthenticated;
+          _errorMessage = 'Response tidak valid dari server';
+          notifyListeners();
+          return false;
+        }
 
         await StorageService.saveToken(token);
         await StorageService.saveAuthRole('kasir');
 
-        _kasir = Kasir.fromJson(kasirData);
+        _kasir = Kasir.fromJson(kasirData as Map<String, dynamic>);
         _mahasiswa = null;
         _currentRole = 'kasir';
 
