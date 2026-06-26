@@ -13,6 +13,7 @@ class Mahasiswa {
   final int? levelId;
   final Level? level;
   final String? avatar;
+  final int koinPerVoucher;
 
   Mahasiswa({
     required this.id,
@@ -27,6 +28,7 @@ class Mahasiswa {
     this.levelId,
     this.level,
     this.avatar,
+    this.koinPerVoucher = 20,
   });
 
   factory Mahasiswa.fromJson(Map<String, dynamic> json) {
@@ -40,6 +42,7 @@ class Mahasiswa {
       rfidUid: json['rfid_uid'],
       totalPoin: json['total_poin'] ?? 0,
       totalKoinBotol: json['total_koin_botol'] ?? 0,
+      koinPerVoucher: json['koin_per_voucher'] ?? 20,
       levelId: json['level_id'],
       level: json['level'] != null && json['level'] is Map<String, dynamic>
           ? Level.fromJson(json['level'] as Map<String, dynamic>)
