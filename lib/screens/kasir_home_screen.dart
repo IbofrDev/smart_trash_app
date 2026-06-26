@@ -59,7 +59,8 @@ class _KasirHomeScreenState extends State<KasirHomeScreen> {
     if (success) {
       scaffoldMessenger.showSnackBar(
         SnackBar(
-          content: Text(provider.successMessage ?? 'Voucher berhasil divalidasi'),
+          content:
+              Text(provider.successMessage ?? 'Voucher berhasil divalidasi'),
           backgroundColor: Colors.green,
         ),
       );
@@ -99,7 +100,9 @@ class _KasirHomeScreenState extends State<KasirHomeScreen> {
       body: RefreshIndicator(
         onRefresh: () async {
           if (_kodeController.text.trim().isNotEmpty) {
-            await context.read<KasirProvider>().checkVoucher(_kodeController.text);
+            await context
+                .read<KasirProvider>()
+                .checkVoucher(_kodeController.text);
           }
         },
         child: ListView(
@@ -110,6 +113,8 @@ class _KasirHomeScreenState extends State<KasirHomeScreen> {
             _buildInputCard(context, kasirProvider, canValidate),
             const SizedBox(height: 16),
             if (voucher != null) _buildVoucherResultCard(voucher),
+            if (voucher == null && kasirProvider.errorMessage != null)
+              _buildErrorState(kasirProvider.errorMessage!),
             if (voucher == null && kasirProvider.errorMessage == null)
               _buildEmptyState(),
           ],
@@ -202,7 +207,8 @@ class _KasirHomeScreenState extends State<KasirHomeScreen> {
               children: [
                 Expanded(
                   child: OutlinedButton.icon(
-                    onPressed: provider.isBusy ? null : () => _handleCheck(context),
+                    onPressed:
+                        provider.isBusy ? null : () => _handleCheck(context),
                     icon: provider.isChecking
                         ? const SizedBox(
                             width: 16,
@@ -222,7 +228,8 @@ class _KasirHomeScreenState extends State<KasirHomeScreen> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: ElevatedButton.icon(
-                    onPressed: canValidate ? () => _handleValidate(context) : null,
+                    onPressed:
+                        canValidate ? () => _handleValidate(context) : null,
                     icon: provider.isSubmitting
                         ? const SizedBox(
                             width: 16,
@@ -393,6 +400,35 @@ class _KasirHomeScreenState extends State<KasirHomeScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildErrorState(String message) {
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(28),
+        child: Column(
+          children: [
+            Icon(Icons.error_outline, size: 64, color: Colors.red[300]),
+            const SizedBox(height: 12),
+            Text(
+              'Voucher Tidak Ditemukan',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.red[700],
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey[500]),
+            ),
+          ],
+        ),
       ),
     );
   }
