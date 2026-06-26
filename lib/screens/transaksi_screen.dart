@@ -33,9 +33,11 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
   }
 
   void _onScroll() {
+    final provider = context.read<TransaksiProvider>();
+    if (provider.isLoading || !provider.hasMore) return;
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 200) {
-      context.read<TransaksiProvider>().loadTransaksi();
+      provider.loadTransaksi();
     }
   }
 
@@ -101,7 +103,7 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
                   );
                 }
 
-                if (provider.transaksis.isEmpty) {
+                if (provider.transaksiFiltered.isEmpty) {
                   return EmptyState(
                     icon: Icons.receipt_long_outlined,
                     title: 'Belum Ada Transaksi',
@@ -115,10 +117,10 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
                   child: ListView.builder(
                     controller: _scrollController,
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount:
-                        provider.transaksis.length + (provider.hasMore ? 1 : 0),
+                    itemCount: provider.transaksiFiltered.length +
+                        (provider.hasMore ? 1 : 0),
                     itemBuilder: (context, index) {
-                      if (index >= provider.transaksis.length) {
+                      if (index >= provider.transaksiFiltered.length) {
                         return const Padding(
                           padding: EdgeInsets.all(16),
                           child: Center(
@@ -127,7 +129,7 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
                         );
                       }
 
-                      final transaksi = provider.transaksis[index];
+                      final transaksi = provider.transaksiFiltered[index];
                       return TransaksiCard(
                         transaksi: transaksi,
                         onTap: () {
