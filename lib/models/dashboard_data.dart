@@ -46,6 +46,7 @@ class DashboardData {
   factory DashboardData.fromJson(Map<String, dynamic> json) {
     final mahasiswa = json['mahasiswa'] ?? {};
     final poin = json['poin'] ?? {};
+    final koin = json['koin'] ?? {};
     final stats = json['stats'] ?? {};
     final transactions = json['recent_transactions'] as List? ?? [];
 
@@ -55,8 +56,8 @@ class DashboardData {
       nim: mahasiswa['nim'],
       prodi: mahasiswa['prodi'],
       totalPoin: poin['total'] ?? 0,
-      totalKoin: stats['total_koin'] ?? 0,
-      voucherAktif: stats['voucher_aktif'] ?? 0,
+      totalKoin: koin['total'] ?? stats['total_koin'] ?? 0,
+      voucherAktif: koin['voucher_aktif'] ?? 0,
       totalBotol: stats['total_botol'] ?? 0,
       levelName: poin['level'] ?? '',
       levelUrutan: poin['level_urutan'] ?? 1,
@@ -97,7 +98,6 @@ class RecentTransaction {
   final String lokasi;
   final String tanggal;
   final String statusValidasi;
-  
 
   RecentTransaction({
     required this.id,
