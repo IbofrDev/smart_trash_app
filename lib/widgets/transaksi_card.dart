@@ -60,9 +60,11 @@ class TransaksiCard extends StatelessWidget {
       labelSampah = transaksi!.namaJenisSampah;
     } else {
       final jenis = recentTransaction?.jenisSampah ?? '';
-      labelSampah = jenis.isNotEmpty 
-          ? jenis 
-          : (jumlahFinal > 0 ? '$jumlahFinal item daur ulang' : 'Sampah Daur Ulang');
+      labelSampah = jenis.isNotEmpty
+          ? jenis
+          : (jumlahFinal > 0
+              ? '$jumlahFinal item daur ulang'
+              : 'Sampah Daur Ulang');
     }
     return Card(
       elevation: 1,
@@ -184,8 +186,8 @@ class TransaksiCard extends StatelessWidget {
                       ),
                       child: Text(
                         '+$koin koin',
-                        style: const TextStyle(
-                          color: Colors.amber,
+                        style: TextStyle(
+                          color: Colors.amber[700],
                           fontWeight: FontWeight.w600,
                           fontSize: 11,
                         ),
@@ -206,13 +208,13 @@ class TransaksiCard extends StatelessWidget {
     );
   }
 
-  String _buildBreakdown(int botol, int kaleng, int final_) {
+  String _buildBreakdown(int botol, int kaleng, int jumlahFinalItem) {
     final parts = <String>[];
     if (botol > 0) parts.add('$botol botol');
     if (kaleng > 0) parts.add('$kaleng kaleng');
     final itemStr = parts.join(' + ');
-    if (final_ != botol + kaleng && final_ > 0) {
-      return '$itemStr → $final_ tervalidasi';
+    if (jumlahFinalItem != botol + kaleng && jumlahFinalItem > 0) {
+      return '$itemStr → $jumlahFinalItem tervalidasi';
     }
     return itemStr;
   }
