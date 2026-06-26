@@ -321,8 +321,8 @@ class _VoucherScreenState extends State<VoucherScreen>
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Tukar Koin'),
-        content: const Text(
-            'Tukarkan 20 koin untuk 1 voucher makan?\n\nKoin akan langsung dipotong setelah voucher dibuat. Setelah itu, tunjukkan kode voucher ke kasir untuk divalidasi.'),
+        content: Text(
+            'Tukarkan ${voucherProvider.koinPerVoucher} koin untuk 1 voucher makan?\n\nKoin akan langsung dipotong setelah voucher dibuat. Setelah itu, tunjukkan kode voucher ke kasir untuk divalidasi.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
@@ -335,7 +335,7 @@ class _VoucherScreenState extends State<VoucherScreen>
 
               if (success) {
                 dashboardProvider.loadDashboard();
-                authProvider.checkAuth();
+                authProvider.refreshProfile();
                 scaffoldMessenger.showSnackBar(
                   SnackBar(
                     content: Text(voucherProvider.successMessage ??
