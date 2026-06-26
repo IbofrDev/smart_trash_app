@@ -23,7 +23,7 @@ class LeaderboardProvider extends ChangeNotifier {
     try {
       final responses = await Future.wait([
         ApiService.getLeaderboard(period: _period),
-        ApiService.getMyRank(),
+        ApiService.getMyRank(period: _period),
       ]);
 
       // Leaderboard list

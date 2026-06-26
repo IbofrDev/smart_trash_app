@@ -336,14 +336,13 @@ class ApiService {
     }
   }
 
-  static Future<ApiResponse> getMyRank() async {
+  static Future<ApiResponse> getMyRank({String period = 'mingguan'}) async {
     final headers = await _getHeaders();
+    final uri = Uri.parse('${ApiConfig.baseUrl}/leaderboard/my-rank')
+        .replace(queryParameters: {'period': period});
     try {
       final response = await http
-          .get(
-            Uri.parse('${ApiConfig.baseUrl}/leaderboard/my-rank'),
-            headers: headers,
-          )
+          .get(uri, headers: headers)
           .timeout(const Duration(seconds: 15));
       return _handleResponse(response);
     } catch (e) {
